@@ -1687,7 +1687,7 @@
 </ul>
 <h3 id="细节清单"><a href="#细节清单" class="headerlink" title="细节清单"></a>细节清单</h3><ul>
 <li>观看直播<ul>
-<li><input checked="" disabled="" type="checkbox"> 直播播放</li>
+<li><input checked="" disabled="" type="checkbox"> 直播播放<br>使用 FLV 协议与格式进行直播串流</li>
 <li><input checked="" disabled="" type="checkbox"> 布局选择</li>
 <li><input checked="" disabled="" type="checkbox"> 设置记忆</li>
 <li><input checked="" disabled="" type="checkbox"> 基本控制（视频、音频、画质、房间号、线路）</li>
@@ -1698,11 +1698,12 @@
 <li><input disabled="" type="checkbox"> 2<strong>弹幕渲染</strong></li>
 <li><input disabled="" type="checkbox"> SC 显示</li>
 <li><input disabled="" type="checkbox"> 布局边界控制</li>
-<li><input disabled="" type="checkbox"> 快速回放（开启视频录制后可以考虑增加进度控制条）</li>
+<li><input checked="" disabled="" type="checkbox"> 快速回放（开启视频录制后可以考虑增加进度控制条）<br>在设置中：“直播缓存设置”选项用于控制串流缓存大小（内存占用）</li>
+<li><input disabled="" type="checkbox"> 设置（顶部控制栏新增“设置”选项）</li>
 </ul>
 </li>
 <li>直播录制<ul>
-<li><input disabled="" type="checkbox"> 1<strong>视频录制</strong><br>使用 FLV 协议与格式进行直播串流；在录制模式时观看界面仍以串流形式播放，录制功能另启用进程在后台保存 fmp4 分片，使用环形缓存持续限制并保留约150个分片用于即时重放：“延长录制&#x2F;停止延长”将控制对分片数量的限制，“导出缓存”功能可将缓存中的分片导出为 MP4 文件，“停止录制”功能可以停止录制并弹出选项是否导出最后片段。顶部控制栏新增“设置”选项，为录制功能添加“缓存设置”选项，用于控制串流缓存大小（内存占用），和即时重放缓存大小（环形缓存分片数量），“磁盘占用”用于设置磁盘占用上限，分为全部（cache 文件夹占用）上限和窗口（对应 room 文件夹占用）上限（不设置为无上限，达到上限时优先删除最旧的分片）。</li>
+<li><input disabled="" type="checkbox"> 1<strong>视频录制</strong><br>在录制模式时观看界面仍以串流形式播放，录制功能另启用 ffmpeg 进程在后台保存 fmp4 分片，使用环形缓存持续限制并保留约150个分片用于即时重放：“延长录制&#x2F;停止延长”将控制对分片数量的限制，“导出缓存”功能可将缓存中的分片导出为 MP4 文件，“停止录制”功能可以停止录制并弹出选项是否导出最后片段。<br>在设置中：添加“录制缓存设置”选项，即时重放缓存大小（环形缓存分片数量），添加“磁盘占用”选项用于设置磁盘占用上限，分为全部（cache 文件夹占用）上限和窗口（对应 room 文件夹占用）上限（不设置为无上限，达到上限时优先删除最旧的分片）</li>
 <li><input disabled="" type="checkbox"> 2<strong>弹幕录制</strong></li>
 <li><input disabled="" type="checkbox"> SC 录制</li>
 <li><input disabled="" type="checkbox"> 3<strong>热点切片</strong>（按弹幕密度） &#x2F; 关键词切片（用于舆情监测，可嵌入 AI 功能）<br>（待定）弹幕密度每30分钟计算平均密度，切片每30秒获取热点（超出平均密度时）。</li>
