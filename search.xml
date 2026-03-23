@@ -1329,6 +1329,18 @@
 <li><code>O_CREATE</code> : 如果文件不存在，就创建文件</li>
 <li><code>O_APPEND</code> : 以追加的方式打开文件<br><code>read()</code> 读，成功返回实际读到的字节数，读到结束返回0，失败返回-1<br><code>write()</code> 写，成功返回写入字节数，失败返回-1<br><code>lseek()</code> 控制指针位置。</li>
 </ol>
+<h2 id="Linux-进程间的通信"><a href="#Linux-进程间的通信" class="headerlink" title="Linux 进程间的通信"></a>Linux 进程间的通信</h2><ol>
+<li>管道</li>
+<li>mmap （memory map，内存映射）</li>
+<li>信号</li>
+<li>本地网路</li>
+<li>消息队列</li>
+</ol>
+<h3 id="管道"><a href="#管道" class="headerlink" title="管道"></a>管道</h3><p>在内存中创建一个共享文件，从而使两个进程利用这个共享文件来传递信息。（不涉及磁盘所以比普通的文件通信效率更高），数据先进先出（FIFO）。内存在系统内核缓冲区间拷贝。</p>
+<h4 id="匿名管道"><a href="#匿名管道" class="headerlink" title="匿名管道"></a>匿名管道</h4><p>只能在一些具有亲缘关系的进程（父子进程）间传递信息。<br><code>pipe()</code> 函数创建一个文件，拥有两个文件描述符（fd[2]），分别控制读写，只能在对应管道的文件描述符相同的进程间使用（fork 创建子进程继承了父进程的文件描述符，可以共享这个管道文件）。</p>
+<h4 id="命名管道"><a href="#命名管道" class="headerlink" title="命名管道"></a>命名管道</h4><p>可以在任意两个进程之间进行通信。直接操作内存。<br><code>open(&quot;my_pipe&quot;, O_RDONLY/O_WRONLY)</code> 函数让系统给文件描述符来控制读写。</p>
+<h3 id="mmap-内存映射"><a href="#mmap-内存映射" class="headerlink" title="mmap 内存映射"></a>mmap 内存映射</h3><p>将一个文件映射到进程的地址空间，实现文件磁盘地址和进程虚拟地址空间中一段虚拟地址的一一对应关系。让程序直接通过内存地址（指针）去操作文件。<br>传统的读写文件没有磁盘权限，需要让操作系统在内核和程序间拷贝数据，效率低。<br><code>mmap()</code> 在程序的虚拟内存里划分一块区域，并映射到内核里的文件缓存上，在内存上读写数据等于直接操作内核里的文件缓存，省去了数据在内核态和用户态之间的来回拷贝。本身不处理并发，需要外部使用同步机制（锁、信号量、原子操作等）。</p>
+<h3 id="信号"><a href="#信号" class="headerlink" title="信号"></a>信号</h3><p>软件层次对中断的模拟，是一种异步通信机制，进程是被动的。<br>操作系统内核区响应某些条件而产生一个事件，操作系统可以把该事件发给进程，对于这个进程来说，这个事件就是信号。进程在接收到信号后会采取相应的动作。</p>
 <h2 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h2><p><code>grep</code> 逐行扫描，并匹配的行打印出来<br><code>|</code> 管道，<code>ps -ef | grep nginx</code> 查找并列出系统当前运行的 nginx 进程</p>
 <h3 id="Linux-的时间操作"><a href="#Linux-的时间操作" class="headerlink" title="Linux 的时间操作"></a>Linux 的时间操作</h3><h3 id="Linux-的目录操作"><a href="#Linux-的目录操作" class="headerlink" title="Linux 的目录操作"></a>Linux 的目录操作</h3><p><code>access()</code> 函数用于判断当前用户对目录或文件的存取权限。</p>
 <div class="admonition anote"><p class="admonition-title"><span class="mdi mdi-note-outline admonition-icon"></span>stat 结构体</p><div class="admonition-content">
@@ -1690,7 +1702,7 @@
 </ul>
 </li>
 <li>直播录制<ul>
-<li><input disabled="" type="checkbox"> 1<strong>视频录制</strong></li>
+<li><input disabled="" type="checkbox"> 1<strong>视频录制</strong><br>使用 FLV 协议与格式进行直播串流；在录制模式时观看界面仍以串流形式播放，录制功能另启用进程在后台保存 fmp4 分片，使用环形缓存持续限制并保留约150个分片用于即时重放：“延长录制&#x2F;停止延长”将控制对分片数量的限制，“导出缓存”功能可将缓存中的分片导出为 MP4 文件，“停止录制”功能可以停止录制并弹出选项是否导出最后片段。顶部控制栏新增“设置”选项，为录制功能添加“缓存设置”选项，用于控制串流缓存大小（内存占用），和即时重放缓存大小（环形缓存分片数量），“磁盘占用”用于设置磁盘占用上限，分为全部（cache 文件夹占用）上限和窗口（对应 room 文件夹占用）上限（不设置为无上限，达到上限时优先删除最旧的分片）。</li>
 <li><input disabled="" type="checkbox"> 2<strong>弹幕录制</strong></li>
 <li><input disabled="" type="checkbox"> SC 录制</li>
 <li><input disabled="" type="checkbox"> 3<strong>热点切片</strong>（按弹幕密度） &#x2F; 关键词切片（用于舆情监测，可嵌入 AI 功能）<br>（待定）弹幕密度每30分钟计算平均密度，切片每30秒获取热点（超出平均密度时）。</li>
