@@ -1691,15 +1691,15 @@
 <li><input checked="" disabled="" type="checkbox"> 布局选择</li>
 <li><input checked="" disabled="" type="checkbox"> 设置记忆</li>
 <li><input checked="" disabled="" type="checkbox"> 基本控制（视频、音频、画质、房间号、线路）</li>
-<li><input disabled="" type="checkbox"> 全局控制</li>
+<li><input checked="" disabled="" type="checkbox"> 全局控制</li>
 <li><input checked="" disabled="" type="checkbox"> 登录</li>
 <li><input disabled="" type="checkbox"> 直播间监测（是否开播，已播时间，距上次直播时间）</li>
 <li><input disabled="" type="checkbox"> 直播间快速设置</li>
 <li><input disabled="" type="checkbox"> 2<strong>弹幕渲染</strong></li>
 <li><input disabled="" type="checkbox"> SC 显示</li>
 <li><input disabled="" type="checkbox"> 布局边界控制</li>
-<li><input checked="" disabled="" type="checkbox"> 快速回放（开启视频录制后可以考虑增加进度控制条）<br>在设置中：“直播缓存设置”选项用于控制串流缓存大小（内存占用）</li>
-<li><input disabled="" type="checkbox"> 设置（顶部控制栏新增“设置”选项）</li>
+<li><input checked="" disabled="" type="checkbox"> 快速回放（开启视频录制后可以考虑增加进度控制条）<br>在设置中：“直播缓存设置”选项用于控制串流缓存大小（内存占用）<br><em>与刷新的交互还需要优化</em></li>
+<li><input checked="" disabled="" type="checkbox"> 设置（顶部控制栏新增“设置”选项）</li>
 </ul>
 </li>
 <li>直播录制<ul>
@@ -1726,6 +1726,7 @@
 <li><input disabled="" type="checkbox"> 延迟</li>
 <li><input disabled="" type="checkbox"> 速度</li>
 </ul>
+<h2 id="笔记"><a href="#笔记" class="headerlink" title="笔记"></a>笔记</h2><p><code>seekable</code> 受 <code>cache</code>&#x3D; yes&#x2F;no 影响。</p>
 ]]></content>
       <categories>
         <category>日志</category>
