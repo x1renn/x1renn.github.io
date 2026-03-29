@@ -799,26 +799,6 @@
       </tags>
   </entry>
   <entry>
-    <title>计网作业1</title>
-    <url>/2025/10/14/UOB/net1/</url>
-    <content><![CDATA[<div class="admonition question"><p class="admonition-title"><span class="mdi mdi-comment-question-outline admonition-icon"></span>Question</p><div class="admonition-content">
-
-<p>(a) What the packet traces tell you about the initial fetch of the http version of the page?<br>(b) What the “-L” flag does and why it is useful here?<br>(c) Anything else interesting that you have seen.</p>
-</div></div>
-
-<p>(a) From the packet trace, I can see the client(172.22.54.16) establishes a <code>TCP</code> connection to the web server(45.76.35.230) on port 80. The three-way handshake (SYN, SYN-ACK, ACK) occurs, followed by an HTTP <code>GET</code> request. Then the server responds with “HTTP&#x2F;1.1 301 Moved Permanently”, which is a redirection response status code indicates that the request resourse has been permanently moved to the URL in the Location header: “Location: <a href="https://tcpdynamics.uk/">https://tcpdynamics.uk/</a>“. Finally, both the server and client gracefully terminate the connection with the “four-way handshake”.<br><img src="https://s2.loli.net/2025/10/14/iLvtIM5W3jSnzwl.png" alt="initial fetch"></p>
-<p>(b) The <code>-L</code> flag allows <code>curl</code> to follow the redirects automatically, as the <code>curl --help all</code> shows. It ensures that <code>curl</code> follows the redirection specified in the response, in order to fetch the actual web page content at the secure address.<br><img src="https://s2.loli.net/2025/10/14/siqrNMeDQhfSpG6.png" alt="curl --help all"></p>
-<p>(c) I also see some <code>DNS</code> and <code>ARP</code> packets in the list and knows how they work. <code>DNS</code> resolves the domain name to its IP address and <code>ARP</code> resolves the MAC address. Besides, by expanding the packet layers in Wireshark, I knows the structures and details of each captured frame.</p>
-]]></content>
-      <categories>
-        <category>笔记</category>
-        <category>作业</category>
-      </categories>
-      <tags>
-        <tag>计算机网络</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>C++ 内存区域</title>
     <url>/2025/08/12/C++/cpp9/</url>
     <content><![CDATA[<h2 id="所划分的内存区块有"><a href="#所划分的内存区块有" class="headerlink" title="所划分的内存区块有?"></a>所划分的内存区块有?</h2><p>在执行 C++ 程序时候，所划分出的内存区块主要有四个：</p>
@@ -1889,8 +1869,394 @@
       </tags>
   </entry>
   <entry>
+    <title>分布式系统第10章</title>
+    <url>/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/</url>
+    <content><![CDATA[<h1 id="Topic-10-Reliable-Broadcast-Algorithms"><a href="#Topic-10-Reliable-Broadcast-Algorithms" class="headerlink" title="Topic 10 - Reliable Broadcast Algorithms"></a>Topic 10 - Reliable Broadcast Algorithms</h1><p><strong>Dependable and Distributed Systems</strong> | Prof. Matthew Leeke | University of Birmingham</p>
+<blockquote>
+<p>📌 <strong>关于考试的说明（来自课堂录音）</strong>：</p>
+<ul>
+<li>教授<strong>不会</strong>要求你背诵向量时钟的具体实现条件（IC1&#x2F;IC2）——“这不公平，也不能很好地体现理解程度”</li>
+<li>对算法的考察方式是：<strong>能否解释算法的本质，并以合理的细节讲清楚</strong></li>
+<li>伪代码实现”仅供你验证自己的理解是否正确”，不需要逐字背诵</li>
+<li>如果问答题中你能写出实现细节，当然加分，但不强制要求</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一、整体架构与设计哲学"><a href="#一、整体架构与设计哲学" class="headerlink" title="一、整体架构与设计哲学"></a>一、整体架构与设计哲学</h2><p>广播抽象的目的是<strong>对应用层隐藏可靠性细节</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│         Application             │  ← 只需调用一次 broadcast</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│    Broadcast Abstraction        │  ← 处理所有可靠性逻辑</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│  Failure Detector   │  Channels │  ← 底层工具</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>核心思路</strong>（来自讲义）：</p>
+<ul>
+<li>应用程序说”请广播这条消息”，完全不用操心底层如何实现</li>
+<li>广播层负责把一次 broadcast 转化为若干次 send&#x2F;receive</li>
+<li>最终确保应用层每条广播<strong>只被 deliver 一次</strong></li>
+</ul>
+<hr>
+<h2 id="二、基础工具包（The-Toolkit）"><a href="#二、基础工具包（The-Toolkit）" class="headerlink" title="二、基础工具包（The Toolkit）"></a>二、基础工具包（The Toolkit）</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Reliable Links</strong></td>
+<td>保证正确节点发送的消息最终被正确节点收到</td>
+</tr>
+<tr>
+<td><strong>Perfect Failure Detector</strong></td>
+<td>精确检测节点崩溃（Accuracy + Completeness）</td>
+</tr>
+<tr>
+<td><strong>故障模式</strong></td>
+<td>本课程<strong>只考虑 Crash 故障</strong>（节点停机，不考虑拜占庭）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、五种广播抽象总览"><a href="#三、五种广播抽象总览" class="headerlink" title="三、五种广播抽象总览"></a>三、五种广播抽象总览</h2><p>强度<strong>从弱到强</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">BEB  →  RB  →  URB  →  RFB  →  COB</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>缩写</th>
+<th>全称</th>
+<th>核心新增保证</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>BEB</strong></td>
+<td>Best-Effort Broadcast</td>
+<td>发送者正确时才可靠</td>
+</tr>
+<tr>
+<td><strong>RB</strong></td>
+<td>Reliable Broadcast</td>
+<td>发送者崩溃也能传播（Agreement for correct）</td>
+</tr>
+<tr>
+<td><strong>URB</strong></td>
+<td>Uniform Reliable Broadcast</td>
+<td>故障进程也尽量交付（Uniform Agreement）</td>
+</tr>
+<tr>
+<td><strong>RFB</strong></td>
+<td>Reliable FIFO Broadcast</td>
+<td>RB + 同一发送者的消息按序交付</td>
+</tr>
+<tr>
+<td><strong>COB</strong></td>
+<td>Causal Order Broadcast</td>
+<td>RB + 全局因果顺序交付</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、Best-Effort-Broadcast（BEB）"><a href="#四、Best-Effort-Broadcast（BEB）" class="headerlink" title="四、Best-Effort Broadcast（BEB）"></a>四、Best-Effort Broadcast（BEB）</h2><h3 id="4-1-三条形式化性质"><a href="#4-1-三条形式化性质" class="headerlink" title="4.1 三条形式化性质"></a>4.1 三条形式化性质</h3><table>
+<thead>
+<tr>
+<th>性质</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Validity</strong></td>
+<td>若 $p_i$（发送者）和 $p_j$（接收者）都正确，则 $p_j$ 最终交付消息</td>
+</tr>
+<tr>
+<td><strong>No Duplication</strong></td>
+<td>消息不被重复交付</td>
+</tr>
+<tr>
+<td><strong>No Creation</strong></td>
+<td>不凭空创造消息</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>讲义重点</strong>：这三条性质是所有后续广播算法的<strong>共同基础</strong>，每种算法都继承它们，区别在于第四条性质如何定义。</p>
+</blockquote>
+<h3 id="4-2-关键缺陷"><a href="#4-2-关键缺陷" class="headerlink" title="4.2 关键缺陷"></a>4.2 关键缺陷</h3><p>发送者崩溃时：</p>
+<ul>
+<li><strong>部分进程</strong>收到消息，<strong>另一部分</strong>收不到</li>
+<li>没有一致性保证——同一系统里不同进程的状态不同</li>
+<li>教授类比：”如果把这些进程类比为数据库服务器，这就会导致不一致性！”</li>
+</ul>
+<h3 id="4-3-算法（基于-Reliable-Links）"><a href="#4-3-算法（基于-Reliable-Links）" class="headerlink" title="4.3 算法（基于 Reliable Links）"></a>4.3 算法（基于 Reliable Links）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Implements: BestEffortBroadcast (BEB)</span><br><span class="line">Uses: ReliableLinks (rp2p)</span><br><span class="line"></span><br><span class="line">upon BEBBroadcast(m):</span><br><span class="line">    for all q in &#123;p1,...,pn&#125;:</span><br><span class="line">        rp2pSend(q, m)     ← 逐一用可靠链路发送给所有人</span><br><span class="line"></span><br><span class="line">upon rp2pDeliver(q, m):</span><br><span class="line">    trigger BEBDeliver(q, m)</span><br></pre></td></tr></table></figure>
+
+<p><strong>复杂度</strong>：每次广播 $N$ 条消息（最优也是 $N$）</p>
+<hr>
+<h2 id="五、Reliable-Broadcast（RB）"><a href="#五、Reliable-Broadcast（RB）" class="headerlink" title="五、Reliable Broadcast（RB）"></a>五、Reliable Broadcast（RB）</h2><h3 id="5-1-新增第四条性质"><a href="#5-1-新增第四条性质" class="headerlink" title="5.1 新增第四条性质"></a>5.1 新增第四条性质</h3><p>在 BEB 三条基础上加：</p>
+<blockquote>
+<p><strong>Agreement</strong>：对任意消息 $m$，若<strong>任意一个正确进程</strong>交付了 $m$，则<strong>所有正确进程</strong>都必须交付 $m$。</p>
+</blockquote>
+<h3 id="5-2-直觉理解（来自讲义）"><a href="#5-2-直觉理解（来自讲义）" class="headerlink" title="5.2 直觉理解（来自讲义）"></a>5.2 直觉理解（来自讲义）</h3><blockquote>
+<p>“提供 all-or-nothing 语义——要么大家（所有正确进程）都收到，要么大家都收不到。”<br>“Agreement 是<strong>活性（liveness）</strong>还是<strong>安全性（safety）</strong>性质？”（这是课上提问，值得思考）</p>
+</blockquote>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>只对<strong>正确进程（correct processes）</strong>有要求</li>
+<li>故障进程：可以交付也可以不交付，<strong>我们不在乎</strong></li>
+<li>一个进程崩溃了就不是 correct process，所以 P1 崩溃后，P1 之前是否交付了消息，对协议的正确性没有影响</li>
+</ul>
+<h3 id="5-3-典型场景图解"><a href="#5-3-典型场景图解" class="headerlink" title="5.3 典型场景图解"></a>5.3 典型场景图解</h3><p><strong>场景一</strong>：发送者崩溃，但有进程收到了消息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p1 → RBroadcast(m) → 崩溃</span><br><span class="line">p2 → BEBDeliver(m) → 代为转发 → p3 也收到 ✓</span><br><span class="line">p3 → RBDeliver(m) ✓</span><br></pre></td></tr></table></figure>
+
+<p><strong>场景二</strong>：发送者崩溃，没有进程收到消息</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">p1 → RBroadcast(m) → 崩溃（发出前就崩了）</span><br><span class="line">p2 → 从未收到 → 也不会交付（正确！）</span><br><span class="line">p3 → 从未收到 → 也不会交付（正确！）</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这是完全合法的——因为没有正确进程交付，Agreement 不被违反。</p>
+</blockquote>
+<h3 id="5-4-算法"><a href="#5-4-算法" class="headerlink" title="5.4 算法"></a>5.4 算法</h3><p><strong>核心思路</strong>：</p>
+<ol>
+<li>正常情况：<code>RBroadcast</code> → <code>BEBBroadcast</code>（直接依赖 BEB）</li>
+<li>发送者崩溃时：用 Perfect Failure Detector 检测到崩溃，<strong>代为转发</strong>该发送者的消息</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Implements: ReliableBroadcast (RB)</span><br><span class="line">Uses: BEB, PerfectFailureDetector (P)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    delivered = &#123;&#125;</span><br><span class="line">    correct = &#123;p1,...,pn&#125;</span><br><span class="line">    from[pi] = &#123;&#125; for all pi</span><br><span class="line"></span><br><span class="line">upon RBBroadcast(m):</span><br><span class="line">    BEBBroadcast([Data, self, m])</span><br><span class="line"></span><br><span class="line">upon crash(pi):                          ← 检测到 pi 崩溃</span><br><span class="line">    correct = correct \ &#123;pi&#125;</span><br><span class="line">    for all [pj, m] in from[pi]:</span><br><span class="line">        BEBBroadcast([Data, pj, m])      ← 替 pi 转发它还没广播完的消息</span><br><span class="line"></span><br><span class="line">upon BEBDeliver(pi, [Data, pj, m]):</span><br><span class="line">    if m not in delivered:</span><br><span class="line">        delivered += &#123;m&#125;</span><br><span class="line">        RBDeliver(pj, m)</span><br><span class="line">        if pi not in correct:            ← pi 已经崩溃，要帮它转发</span><br><span class="line">            BEBBroadcast([Data, pj, m])</span><br><span class="line">    from[pi] += &#123;[pj, m]&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-复杂度分析"><a href="#5-5-复杂度分析" class="headerlink" title="5.5 复杂度分析"></a>5.5 复杂度分析</h3><table>
+<thead>
+<tr>
+<th>情形</th>
+<th>消息数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>最优</strong>（无故障）</td>
+<td>$N$ 条</td>
+</tr>
+<tr>
+<td><strong>最差</strong>（全部进程级联转发）</td>
+<td>$N^2$ 条</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>讲义提示</strong>：$N^2$ 的情况对应”每个进程都需要转发”——级联失败场景。教授说：”我每次看到级联失败，都怀疑有人在恶意发消息触发进程崩溃——这是安全漏洞的特征。”</p>
+</blockquote>
+<hr>
+<h2 id="六、Uniform-Reliable-Broadcast（URB）"><a href="#六、Uniform-Reliable-Broadcast（URB）" class="headerlink" title="六、Uniform Reliable Broadcast（URB）"></a>六、Uniform Reliable Broadcast（URB）</h2><h3 id="6-1-与-RB-的唯一区别"><a href="#6-1-与-RB-的唯一区别" class="headerlink" title="6.1 与 RB 的唯一区别"></a>6.1 与 RB 的唯一区别</h3><p>RB Agreement vs URB Uniform Agreement 的对比：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>触发条件</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RB Agreement</strong></td>
+<td><strong>正确进程</strong>交付了 $m$</td>
+<td>所有<strong>正确进程</strong>也交付 $m$</td>
+</tr>
+<tr>
+<td><strong>URB Uniform Agreement</strong></td>
+<td><strong>任意进程</strong>（含故障）交付了 $m$</td>
+<td>所有<strong>正确进程</strong>也交付 $m$</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>本质上就是去掉了”correct”这个词的限定。</p>
+</blockquote>
+<h3 id="6-2-为什么需要-URB"><a href="#6-2-为什么需要-URB" class="headerlink" title="6.2 为什么需要 URB"></a>6.2 为什么需要 URB</h3><blockquote>
+<p>讲义原话：故障进程在崩溃前可能已经交付了消息，这在实时系统中可能已经被用户观察到，或被写入日志。URB 保证这种”已观察到的交付”不会导致不一致。</p>
+</blockquote>
+<h3 id="6-3-算法思路：等待所有存活进程确认"><a href="#6-3-算法思路：等待所有存活进程确认" class="headerlink" title="6.3 算法思路：等待所有存活进程确认"></a>6.3 算法思路：等待所有存活进程确认</h3><p><strong>核心思路</strong>：</p>
+<ul>
+<li>每条消息附带一个 <code>ack[m]</code> 集合，记录哪些进程已经 BEBDeliver 了该消息</li>
+<li><strong>只有当所有当前存活进程都确认后</strong>，才触发 URBDeliver</li>
+<li>同时采用 eager relay（急切转发）——收到消息立刻转发给所有人</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Implements: UniformReliableBroadcast (URB)</span><br><span class="line">Uses: BEB, PerfectFailureDetector (P)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    delivered = &#123;&#125;, pending = &#123;&#125;, correct = &#123;p1,...,pn&#125;</span><br><span class="line">    ack[m] = &#123;&#125; for all m</span><br><span class="line"></span><br><span class="line">upon crash(pi):</span><br><span class="line">    correct = correct \ &#123;pi&#125;</span><br><span class="line"></span><br><span class="line">upon URBBroadcast(m):</span><br><span class="line">    pending += &#123;[self, m]&#125;</span><br><span class="line">    BEBBroadcast([Data, self, m])</span><br><span class="line"></span><br><span class="line">upon BEBDeliver(pi, [Data, pj, m]):</span><br><span class="line">    ack[m] += &#123;pi&#125;                           ← 记录 pi 已确认</span><br><span class="line">    if [pj, m] not in pending:</span><br><span class="line">        pending += &#123;[pj, m]&#125;</span><br><span class="line">        BEBBroadcast([Data, pj, m])          ← 急切转发</span><br><span class="line"></span><br><span class="line">when [pj,m] in pending</span><br><span class="line">     AND correct ⊆ ack[m]                   ← 所有存活进程都确认了</span><br><span class="line">     AND m not in delivered:</span><br><span class="line">    delivered += &#123;m&#125;</span><br><span class="line">    URBDeliver(pj, m)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-正确性证明思路（Lemma）"><a href="#6-4-正确性证明思路（Lemma）" class="headerlink" title="6.4 正确性证明思路（Lemma）"></a>6.4 正确性证明思路（Lemma）</h3><blockquote>
+<p><strong>引理</strong>：若某正确进程执行了 <code>BEBDeliver(m)</code>，则它最终也会 <code>URBDeliver(m)</code>。</p>
+</blockquote>
+<p><strong>证明链</strong>：</p>
+<ol>
+<li>执行 <code>BEBDeliver(m)</code> 的进程会执行 <code>BEBBroadcast(m)</code>（eager relay）</li>
+<li>由 BEB Validity，所有正确进程最终都会 <code>BEBDeliver(m)</code> → 都加入 <code>ack[m]</code></li>
+<li>Failure Detector 的 Completeness 保证：崩溃进程最终从 <code>correct</code> 中移除</li>
+<li>因此条件 <code>correct ⊆ ack[m]</code> 最终成立 → <code>URBDeliver(m)</code> 触发 ✓</li>
+</ol>
+<hr>
+<h2 id="七、FIFO-Reliable-Broadcast（RFB）"><a href="#七、FIFO-Reliable-Broadcast（RFB）" class="headerlink" title="七、FIFO Reliable Broadcast（RFB）"></a>七、FIFO Reliable Broadcast（RFB）</h2><h3 id="7-1-新增性质"><a href="#7-1-新增性质" class="headerlink" title="7.1 新增性质"></a>7.1 新增性质</h3><blockquote>
+<p><strong>FIFO Order</strong>：若 $p_i$ 先广播 $m_1$ 再广播 $m_2$，则任意其他进程 $p_j$ 不得在交付 $m_1$ 之前交付 $m_2$。</p>
+</blockquote>
+<h3 id="7-2-重要理解（来自讲义）"><a href="#7-2-重要理解（来自讲义）" class="headerlink" title="7.2 重要理解（来自讲义）"></a>7.2 重要理解（来自讲义）</h3><p>FIFO 是<strong>per-process 顺序</strong>：</p>
+<ul>
+<li>保证你收到 Alice 发的消息按 Alice 的发送顺序排列</li>
+<li>保证你收到 Bob 发的消息按 Bob 的发送顺序排列</li>
+<li><strong>但不保证</strong> Alice 和 Bob 的消息之间有任何顺序关系</li>
+</ul>
+<p>举例：Alice 发 A→B，Bob 发 X→Y，以下顺序都合法：</p>
+<ul>
+<li><code>X, A, B, Y</code> ✓</li>
+<li><code>X, Y, A, B</code> ✓</li>
+<li><code>A, X, B, Y</code> ✓</li>
+</ul>
+<h3 id="7-3-算法（在-RB-基础上加序列号-缓冲区）"><a href="#7-3-算法（在-RB-基础上加序列号-缓冲区）" class="headerlink" title="7.3 算法（在 RB 基础上加序列号+缓冲区）"></a>7.3 算法（在 RB 基础上加序列号+缓冲区）</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Implements: ReliableFifoBroadcast (RFB)</span><br><span class="line">Uses: ReliableBroadcast (RB)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    buffer = &#123;&#125;</span><br><span class="line">    next[src] = 1 for all src   ← 每个发送者下一个期待的序号</span><br><span class="line">    seq = 1                     ← 本进程的发送序号</span><br><span class="line"></span><br><span class="line">upon RFBBroadcast(m):</span><br><span class="line">    RBroadcast((seq, m))        ← 带上序列号</span><br><span class="line">    seq += 1</span><br><span class="line"></span><br><span class="line">upon RDeliver(src, (sn, m)):</span><br><span class="line">    buffer += (src, sn, m)</span><br><span class="line">    while (src&#x27;, sn&#x27;, m&#x27;) in buffer where sn&#x27; == next[src&#x27;]:</span><br><span class="line">        RFDeliver(src&#x27;, m&#x27;)</span><br><span class="line">        next[src&#x27;] += 1         ← 按序号顺序交付</span><br><span class="line">        buffer -= (src&#x27;, sn&#x27;, m&#x27;)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>本质</strong>：维护一个缓冲区，只有序号连续时才交付——类似 TCP 的有序交付机制。</p>
+</blockquote>
+<hr>
+<h2 id="八、Causal-Order-Broadcast（COB）"><a href="#八、Causal-Order-Broadcast（COB）" class="headerlink" title="八、Causal Order Broadcast（COB）"></a>八、Causal Order Broadcast（COB）</h2><h3 id="8-1-为什么需要因果广播"><a href="#8-1-为什么需要因果广播" class="headerlink" title="8.1 为什么需要因果广播"></a>8.1 为什么需要因果广播</h3><p>FIFO 只保证单进程内有序，但<strong>跨进程的因果依赖</strong>无法捕获：</p>
+<blockquote>
+<p>讲义例子（Bloomberg）：Bloomberg 终端广播金融事件。事件 B 是因为事件 A 发生而产生的（因果关系）。如果 B 在 A 之前被交付，用户会看到”结果”先于”原因”出现。</p>
+</blockquote>
+<h3 id="8-2-因果关系的定义"><a href="#8-2-因果关系的定义" class="headerlink" title="8.2 因果关系的定义"></a>8.2 因果关系的定义</h3><p>$m_1 \to m_2$（$m_1$ <strong>因果先于</strong> $m_2$）成立，当且仅当满足以下任一条件：</p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FIFO Order</strong></td>
+<td>同一进程先广播 $m_1$ 再广播 $m_2$</td>
+</tr>
+<tr>
+<td><strong>Local Order</strong></td>
+<td>某进程先交付 $m_1$，然后广播 $m_2$</td>
+</tr>
+<tr>
+<td><strong>Transitivity</strong></td>
+<td>存在 $m_3$ 使得 $m_1 \to m_3$ 且 $m_3 \to m_2$</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-新增性质"><a href="#8-3-新增性质" class="headerlink" title="8.3 新增性质"></a>8.3 新增性质</h3><blockquote>
+<p><strong>Causal Order</strong>：若 $m_1 \to m_2$，则任何进程交付 $m_2$ 之前必须先交付 $m_1$。</p>
+</blockquote>
+<h3 id="8-4-两种实现"><a href="#8-4-两种实现" class="headerlink" title="8.4 两种实现"></a>8.4 两种实现</h3><h4 id="方法一：携带历史（非阻塞）"><a href="#方法一：携带历史（非阻塞）" class="headerlink" title="方法一：携带历史（非阻塞）"></a>方法一：携带历史（非阻塞）</h4><p><strong>思路</strong>：每次广播时，把自己已知的<strong>全部历史消息</strong>一并打包发出。接收方先交付历史，再交付当前消息。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">upon COBBroadcast(m):</span><br><span class="line">    RBroadcast([Data, past, m])    ← past 包含所有之前的消息</span><br><span class="line">    past += &#123;[self, m]&#125;</span><br><span class="line"></span><br><span class="line">upon RDeliver(pi, [Data, past_m, m]):</span><br><span class="line">    for all [sn, m&#x27;] in past_m:    ← 先处理历史中未交付的消息</span><br><span class="line">        if m&#x27; not in delivered:</span><br><span class="line">            CODeliver(sn, m&#x27;)</span><br><span class="line">            delivered += &#123;m&#x27;&#125;</span><br><span class="line">    CODeliver(pi, m)</span><br><span class="line">    delivered += &#123;m&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>缺点</strong>：随着历史增长，消息体积越来越大。</p>
+<h4 id="方法二：向量时钟（阻塞，更推荐）"><a href="#方法二：向量时钟（阻塞，更推荐）" class="headerlink" title="方法二：向量时钟（阻塞，更推荐）"></a>方法二：向量时钟（阻塞，更推荐）</h4><p><strong>思路</strong>：每个进程维护向量时钟 $VC$，只广播计数而非完整历史。收到消息后，检查本地 $VC$ 是否已”追上”消息的因果前提，未追上则放入 <code>pending</code> 等待。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Init:</span><br><span class="line">    VC[pi] = 0 for all pi</span><br><span class="line">    pending = &#123;&#125;</span><br><span class="line"></span><br><span class="line">upon COBBroadcast(m):</span><br><span class="line">    CODeliver(self, m)</span><br><span class="line">    RBroadcast([Data, VC, m])</span><br><span class="line">    VC[self] += 1</span><br><span class="line"></span><br><span class="line">upon RDeliver(pj, [Data, VCm, m]):</span><br><span class="line">    if pj != self:</span><br><span class="line">        pending += &#123;(pj, VCm, m)&#125;</span><br><span class="line">    trigger DeliverPending</span><br><span class="line"></span><br><span class="line">upon DeliverPending:</span><br><span class="line">    while (sx, VCx, x) in pending</span><br><span class="line">          where VC[pj] &gt;= VCx[pj] for all pj:   ← 本地时钟已满足因果前提</span><br><span class="line">        pending -= (sx, VCx, x)</span><br><span class="line">        CODeliver(sx, x)</span><br><span class="line">        VC[sx] += 1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>讲义原话</strong>：向量时钟方法”更简洁”，因为”回到时钟，就完事了”。Bloomberg 使用的实现与此几乎相同。</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>考试提示</strong>：向量时钟的 IC1&#x2F;IC2 形式化条件<strong>不需要背</strong>。但需要理解：向量时钟能捕获全局因果顺序的<strong>原因</strong>，以及它与 FIFO 的区别。</p>
+</blockquote>
+<hr>
+<h2 id="九、全局总结与层次关系"><a href="#九、全局总结与层次关系" class="headerlink" title="九、全局总结与层次关系"></a>九、全局总结与层次关系</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">COB（因果广播）        ← &quot;全局 FIFO&quot;，跨进程因果顺序</span><br><span class="line">    │</span><br><span class="line">    └── RFB（FIFO广播）← 单进程内有序</span><br><span class="line">            │</span><br><span class="line">            ├── URB（统一可靠广播）← 故障进程也尽量交付</span><br><span class="line">            │       │</span><br><span class="line">            │       └── RB（可靠广播）← 发送者独立性</span><br><span class="line">            │               │</span><br><span class="line">            │               └── BEB（尽力广播）← 最基础</span><br><span class="line">            │</span><br><span class="line">            └── UFB（统一 FIFO 广播）← URB + FIFO</span><br></pre></td></tr></table></figure>
+
+<h3 id="性质对比一览"><a href="#性质对比一览" class="headerlink" title="性质对比一览"></a>性质对比一览</h3><table>
+<thead>
+<tr>
+<th>性质</th>
+<th align="center">BEB</th>
+<th align="center">RB</th>
+<th align="center">URB</th>
+<th align="center">RFB</th>
+<th align="center">COB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Validity</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>No Duplication</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>No Creation</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Agreement</td>
+<td align="center">—</td>
+<td align="center">✓（correct）</td>
+<td align="center">✓（all）</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>FIFO Order</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Causal Order</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、关键概念辨析"><a href="#十、关键概念辨析" class="headerlink" title="十、关键概念辨析"></a>十、关键概念辨析</h2><h3 id="Agreement-vs-Uniform-Agreement"><a href="#Agreement-vs-Uniform-Agreement" class="headerlink" title="Agreement vs Uniform Agreement"></a>Agreement vs Uniform Agreement</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">RB Agreement:       if a CORRECT process delivers m</span><br><span class="line">                    → all correct processes deliver m</span><br><span class="line"></span><br><span class="line">URB Uniform Agreement: if ANY process delivers m (even faulty)</span><br><span class="line">                       → all correct processes deliver m</span><br></pre></td></tr></table></figure>
+
+<h3 id="FIFO-vs-Causal-Order"><a href="#FIFO-vs-Causal-Order" class="headerlink" title="FIFO vs Causal Order"></a>FIFO vs Causal Order</h3><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">FIFO：   per-process 顺序</span><br><span class="line">         Alice: A→B 保证，Bob: X→Y 保证</span><br><span class="line">         但 A,B 与 X,Y 之间的顺序不保证</span><br><span class="line"></span><br><span class="line">Causal： global 因果顺序</span><br><span class="line">         只要 m1 → m2（因果关系），</span><br><span class="line">         任何进程都必须在 m2 前看到 m1</span><br></pre></td></tr></table></figure>
+
+<h3 id="为何-URB-需要等待所有进程确认"><a href="#为何-URB-需要等待所有进程确认" class="headerlink" title="为何 URB 需要等待所有进程确认"></a>为何 URB 需要等待所有进程确认</h3><blockquote>
+<p>因为如果一个进程在崩溃前交付了 $m$，根据 Uniform Agreement，所有正确进程都必须也交付 $m$。所以必须在”确认所有存活进程都能看到这条消息”后，才能安全交付。</p>
+</blockquote>
+<hr>
+<h2 id="十一、考试备考要点"><a href="#十一、考试备考要点" class="headerlink" title="十一、考试备考要点"></a>十一、考试备考要点</h2><p>✅ <strong>需要掌握</strong>：</p>
+<ul>
+<li>五种广播抽象各自的核心性质（尤其是第四条）</li>
+<li>BEB → RB → URB 之间的演进逻辑（每步加了什么）</li>
+<li>RB 算法的 relay 机制与 Failure Detector 的配合</li>
+<li>URB 算法为何需要”等待所有存活进程确认”</li>
+<li>FIFO vs Causal Order 的本质区别</li>
+<li>向量时钟<strong>为什么</strong>能解决因果顺序问题（不需要背公式）</li>
+</ul>
+<p>❌ <strong>不需要背</strong>：</p>
+<ul>
+<li>向量时钟的 IC1&#x2F;IC2 形式化条件</li>
+<li>算法伪代码的完整逐行细节</li>
+<li>具体的 rp2p、sp2p 实现细节</li>
+</ul>
+]]></content>
+      <categories>
+        <category>笔记</category>
+      </categories>
+      <tags>
+        <tag>分布式</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>计网作业1</title>
+    <url>/2025/10/14/UOB/Network/net1/</url>
+    <content><![CDATA[<div class="admonition question"><p class="admonition-title"><span class="mdi mdi-comment-question-outline admonition-icon"></span>Question</p><div class="admonition-content">
+
+<p>(a) What the packet traces tell you about the initial fetch of the http version of the page?<br>(b) What the “-L” flag does and why it is useful here?<br>(c) Anything else interesting that you have seen.</p>
+</div></div>
+
+<p>(a) From the packet trace, I can see the client(172.22.54.16) establishes a <code>TCP</code> connection to the web server(45.76.35.230) on port 80. The three-way handshake (SYN, SYN-ACK, ACK) occurs, followed by an HTTP <code>GET</code> request. Then the server responds with “HTTP&#x2F;1.1 301 Moved Permanently”, which is a redirection response status code indicates that the request resourse has been permanently moved to the URL in the Location header: “Location: <a href="https://tcpdynamics.uk/">https://tcpdynamics.uk/</a>“. Finally, both the server and client gracefully terminate the connection with the “four-way handshake”.<br><img src="https://s2.loli.net/2025/10/14/iLvtIM5W3jSnzwl.png" alt="initial fetch"></p>
+<p>(b) The <code>-L</code> flag allows <code>curl</code> to follow the redirects automatically, as the <code>curl --help all</code> shows. It ensures that <code>curl</code> follows the redirection specified in the response, in order to fetch the actual web page content at the secure address.<br><img src="https://s2.loli.net/2025/10/14/siqrNMeDQhfSpG6.png" alt="curl --help all"></p>
+<p>(c) I also see some <code>DNS</code> and <code>ARP</code> packets in the list and knows how they work. <code>DNS</code> resolves the domain name to its IP address and <code>ARP</code> resolves the MAC address. Besides, by expanding the packet layers in Wireshark, I knows the structures and details of each captured frame.</p>
+]]></content>
+      <categories>
+        <category>笔记</category>
+        <category>作业</category>
+      </categories>
+      <tags>
+        <tag>计算机网络</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>分布式系统课程总结</title>
-    <url>/2026/03/27/UOB/Dependable%20and%20Distributed%20Systems/</url>
+    <url>/2026/03/27/UOB/Dependable%20and%20Distributed%20Systems/Dependable%20and%20Distributed%20Systems/</url>
     <content><![CDATA[<h1 id="Revision"><a href="#Revision" class="headerlink" title="Revision"></a>Revision</h1><p>introduction 2<br>dependability concepts 8<br>software fault tolerance 7<br>dependability analysis and evaluation 9 做历年卷子<br>leader election 8.5 定义 根据 properties 阐述问题<br>consensus 8 多写<br>byzantine generals problem 8<br>clocks 8 用 AI 举例 图标<br>reliable links and failure detectors 6 defination<br>reliable broadcast algorithms 8 </p>
 ]]></content>
       <categories>

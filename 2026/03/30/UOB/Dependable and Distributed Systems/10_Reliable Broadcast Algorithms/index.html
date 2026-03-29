@@ -1,0 +1,723 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>分布式系统第10章 | 逸人の博客</title><meta name="author" content="逸人,x1ren@qq.com"><meta name="copyright" content="逸人"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#FFF5E1"><meta name="description" content="第10章 Reliable Broadcast Algorithms 总结">
+<meta property="og:type" content="article">
+<meta property="og:title" content="分布式系统第10章">
+<meta property="og:url" content="https://blog.x1ren.top/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/index.html">
+<meta property="og:site_name" content="逸人の博客">
+<meta property="og:description" content="第10章 Reliable Broadcast Algorithms 总结">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog.x1ren.top/img/avatar.jpg">
+<meta property="article:published_time" content="2026-03-29T23:40:36.000Z">
+<meta property="article:modified_time" content="2026-03-29T23:43:19.664Z">
+<meta property="article:author" content="逸人">
+<meta property="article:tag" content="分布式">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.x1ren.top/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "分布式系统第10章",
+  "url": "https://blog.x1ren.top/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/",
+  "image": "https://blog.x1ren.top/img/avatar.jpg",
+  "datePublished": "2026-03-29T23:40:36.000Z",
+  "dateModified": "2026-03-29T23:43:19.664Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "逸人",
+      "url": "https://blog.x1ren.top"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.x1ren.top/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.4.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2A2A2A')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFF5E1')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":true,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 逸人","link":"链接: ","source":"来源: 逸人の博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '分布式系统第10章',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/words.css"><link rel="stylesheet" href="/css/transparency.css"><link rel="stylesheet" href="/css/admonition.css"><link rel="stylesheet" href="/css/table.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" id="hexo-admonition-icon-injected">
+  </head><body><div id="web_bg" style="background-image: url(/img/wb-bg.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">49</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">逸人の博客</span></a><a class="nav-page-title" href="/"><span class="site-name">分布式系统第10章</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">分布式系统第10章</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-03-29T23:40:36.000Z" title="发表于 2026-03-30 00:40:36">2026-03-30</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-03-29T23:43:19.664Z" title="更新于 2026-03-30 00:43:19">2026-03-30</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>11分钟</span></span><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="twikoo_visitors"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h1 id="Topic-10-Reliable-Broadcast-Algorithms"><a href="#Topic-10-Reliable-Broadcast-Algorithms" class="headerlink" title="Topic 10 - Reliable Broadcast Algorithms"></a>Topic 10 - Reliable Broadcast Algorithms</h1><p><strong>Dependable and Distributed Systems</strong> | Prof. Matthew Leeke | University of Birmingham</p>
+<blockquote>
+<p>📌 <strong>关于考试的说明（来自课堂录音）</strong>：</p>
+<ul>
+<li>教授<strong>不会</strong>要求你背诵向量时钟的具体实现条件（IC1&#x2F;IC2）——“这不公平，也不能很好地体现理解程度”</li>
+<li>对算法的考察方式是：<strong>能否解释算法的本质，并以合理的细节讲清楚</strong></li>
+<li>伪代码实现”仅供你验证自己的理解是否正确”，不需要逐字背诵</li>
+<li>如果问答题中你能写出实现细节，当然加分，但不强制要求</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="一、整体架构与设计哲学"><a href="#一、整体架构与设计哲学" class="headerlink" title="一、整体架构与设计哲学"></a>一、整体架构与设计哲学</h2><p>广播抽象的目的是<strong>对应用层隐藏可靠性细节</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">┌─────────────────────────────────┐</span><br><span class="line">│         Application             │  ← 只需调用一次 broadcast</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│    Broadcast Abstraction        │  ← 处理所有可靠性逻辑</span><br><span class="line">├─────────────────────────────────┤</span><br><span class="line">│  Failure Detector   │  Channels │  ← 底层工具</span><br><span class="line">└─────────────────────────────────┘</span><br></pre></td></tr></table></figure>
+
+<p><strong>核心思路</strong>（来自讲义）：</p>
+<ul>
+<li>应用程序说”请广播这条消息”，完全不用操心底层如何实现</li>
+<li>广播层负责把一次 broadcast 转化为若干次 send&#x2F;receive</li>
+<li>最终确保应用层每条广播<strong>只被 deliver 一次</strong></li>
+</ul>
+<hr>
+<h2 id="二、基础工具包（The-Toolkit）"><a href="#二、基础工具包（The-Toolkit）" class="headerlink" title="二、基础工具包（The Toolkit）"></a>二、基础工具包（The Toolkit）</h2><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Reliable Links</strong></td>
+<td>保证正确节点发送的消息最终被正确节点收到</td>
+</tr>
+<tr>
+<td><strong>Perfect Failure Detector</strong></td>
+<td>精确检测节点崩溃（Accuracy + Completeness）</td>
+</tr>
+<tr>
+<td><strong>故障模式</strong></td>
+<td>本课程<strong>只考虑 Crash 故障</strong>（节点停机，不考虑拜占庭）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、五种广播抽象总览"><a href="#三、五种广播抽象总览" class="headerlink" title="三、五种广播抽象总览"></a>三、五种广播抽象总览</h2><p>强度<strong>从弱到强</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">BEB  →  RB  →  URB  →  RFB  →  COB</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>缩写</th>
+<th>全称</th>
+<th>核心新增保证</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>BEB</strong></td>
+<td>Best-Effort Broadcast</td>
+<td>发送者正确时才可靠</td>
+</tr>
+<tr>
+<td><strong>RB</strong></td>
+<td>Reliable Broadcast</td>
+<td>发送者崩溃也能传播（Agreement for correct）</td>
+</tr>
+<tr>
+<td><strong>URB</strong></td>
+<td>Uniform Reliable Broadcast</td>
+<td>故障进程也尽量交付（Uniform Agreement）</td>
+</tr>
+<tr>
+<td><strong>RFB</strong></td>
+<td>Reliable FIFO Broadcast</td>
+<td>RB + 同一发送者的消息按序交付</td>
+</tr>
+<tr>
+<td><strong>COB</strong></td>
+<td>Causal Order Broadcast</td>
+<td>RB + 全局因果顺序交付</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="四、Best-Effort-Broadcast（BEB）"><a href="#四、Best-Effort-Broadcast（BEB）" class="headerlink" title="四、Best-Effort Broadcast（BEB）"></a>四、Best-Effort Broadcast（BEB）</h2><h3 id="4-1-三条形式化性质"><a href="#4-1-三条形式化性质" class="headerlink" title="4.1 三条形式化性质"></a>4.1 三条形式化性质</h3><table>
+<thead>
+<tr>
+<th>性质</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Validity</strong></td>
+<td>若 $p_i$（发送者）和 $p_j$（接收者）都正确，则 $p_j$ 最终交付消息</td>
+</tr>
+<tr>
+<td><strong>No Duplication</strong></td>
+<td>消息不被重复交付</td>
+</tr>
+<tr>
+<td><strong>No Creation</strong></td>
+<td>不凭空创造消息</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>讲义重点</strong>：这三条性质是所有后续广播算法的<strong>共同基础</strong>，每种算法都继承它们，区别在于第四条性质如何定义。</p>
+</blockquote>
+<h3 id="4-2-关键缺陷"><a href="#4-2-关键缺陷" class="headerlink" title="4.2 关键缺陷"></a>4.2 关键缺陷</h3><p>发送者崩溃时：</p>
+<ul>
+<li><strong>部分进程</strong>收到消息，<strong>另一部分</strong>收不到</li>
+<li>没有一致性保证——同一系统里不同进程的状态不同</li>
+<li>教授类比：”如果把这些进程类比为数据库服务器，这就会导致不一致性！”</li>
+</ul>
+<h3 id="4-3-算法（基于-Reliable-Links）"><a href="#4-3-算法（基于-Reliable-Links）" class="headerlink" title="4.3 算法（基于 Reliable Links）"></a>4.3 算法（基于 Reliable Links）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Implements: BestEffortBroadcast (BEB)</span><br><span class="line">Uses: ReliableLinks (rp2p)</span><br><span class="line"></span><br><span class="line">upon BEBBroadcast(m):</span><br><span class="line">    for all q in &#123;p1,...,pn&#125;:</span><br><span class="line">        rp2pSend(q, m)     ← 逐一用可靠链路发送给所有人</span><br><span class="line"></span><br><span class="line">upon rp2pDeliver(q, m):</span><br><span class="line">    trigger BEBDeliver(q, m)</span><br></pre></td></tr></table></figure>
+
+<p><strong>复杂度</strong>：每次广播 $N$ 条消息（最优也是 $N$）</p>
+<hr>
+<h2 id="五、Reliable-Broadcast（RB）"><a href="#五、Reliable-Broadcast（RB）" class="headerlink" title="五、Reliable Broadcast（RB）"></a>五、Reliable Broadcast（RB）</h2><h3 id="5-1-新增第四条性质"><a href="#5-1-新增第四条性质" class="headerlink" title="5.1 新增第四条性质"></a>5.1 新增第四条性质</h3><p>在 BEB 三条基础上加：</p>
+<blockquote>
+<p><strong>Agreement</strong>：对任意消息 $m$，若<strong>任意一个正确进程</strong>交付了 $m$，则<strong>所有正确进程</strong>都必须交付 $m$。</p>
+</blockquote>
+<h3 id="5-2-直觉理解（来自讲义）"><a href="#5-2-直觉理解（来自讲义）" class="headerlink" title="5.2 直觉理解（来自讲义）"></a>5.2 直觉理解（来自讲义）</h3><blockquote>
+<p>“提供 all-or-nothing 语义——要么大家（所有正确进程）都收到，要么大家都收不到。”<br>“Agreement 是<strong>活性（liveness）</strong>还是<strong>安全性（safety）</strong>性质？”（这是课上提问，值得思考）</p>
+</blockquote>
+<p><strong>关键点</strong>：</p>
+<ul>
+<li>只对<strong>正确进程（correct processes）</strong>有要求</li>
+<li>故障进程：可以交付也可以不交付，<strong>我们不在乎</strong></li>
+<li>一个进程崩溃了就不是 correct process，所以 P1 崩溃后，P1 之前是否交付了消息，对协议的正确性没有影响</li>
+</ul>
+<h3 id="5-3-典型场景图解"><a href="#5-3-典型场景图解" class="headerlink" title="5.3 典型场景图解"></a>5.3 典型场景图解</h3><p><strong>场景一</strong>：发送者崩溃，但有进程收到了消息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p1 → RBroadcast(m) → 崩溃</span><br><span class="line">p2 → BEBDeliver(m) → 代为转发 → p3 也收到 ✓</span><br><span class="line">p3 → RBDeliver(m) ✓</span><br></pre></td></tr></table></figure>
+
+<p><strong>场景二</strong>：发送者崩溃，没有进程收到消息</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">p1 → RBroadcast(m) → 崩溃（发出前就崩了）</span><br><span class="line">p2 → 从未收到 → 也不会交付（正确！）</span><br><span class="line">p3 → 从未收到 → 也不会交付（正确！）</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>这是完全合法的——因为没有正确进程交付，Agreement 不被违反。</p>
+</blockquote>
+<h3 id="5-4-算法"><a href="#5-4-算法" class="headerlink" title="5.4 算法"></a>5.4 算法</h3><p><strong>核心思路</strong>：</p>
+<ol>
+<li>正常情况：<code>RBroadcast</code> → <code>BEBBroadcast</code>（直接依赖 BEB）</li>
+<li>发送者崩溃时：用 Perfect Failure Detector 检测到崩溃，<strong>代为转发</strong>该发送者的消息</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">Implements: ReliableBroadcast (RB)</span><br><span class="line">Uses: BEB, PerfectFailureDetector (P)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    delivered = &#123;&#125;</span><br><span class="line">    correct = &#123;p1,...,pn&#125;</span><br><span class="line">    from[pi] = &#123;&#125; for all pi</span><br><span class="line"></span><br><span class="line">upon RBBroadcast(m):</span><br><span class="line">    BEBBroadcast([Data, self, m])</span><br><span class="line"></span><br><span class="line">upon crash(pi):                          ← 检测到 pi 崩溃</span><br><span class="line">    correct = correct \ &#123;pi&#125;</span><br><span class="line">    for all [pj, m] in from[pi]:</span><br><span class="line">        BEBBroadcast([Data, pj, m])      ← 替 pi 转发它还没广播完的消息</span><br><span class="line"></span><br><span class="line">upon BEBDeliver(pi, [Data, pj, m]):</span><br><span class="line">    if m not in delivered:</span><br><span class="line">        delivered += &#123;m&#125;</span><br><span class="line">        RBDeliver(pj, m)</span><br><span class="line">        if pi not in correct:            ← pi 已经崩溃，要帮它转发</span><br><span class="line">            BEBBroadcast([Data, pj, m])</span><br><span class="line">    from[pi] += &#123;[pj, m]&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-5-复杂度分析"><a href="#5-5-复杂度分析" class="headerlink" title="5.5 复杂度分析"></a>5.5 复杂度分析</h3><table>
+<thead>
+<tr>
+<th>情形</th>
+<th>消息数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>最优</strong>（无故障）</td>
+<td>$N$ 条</td>
+</tr>
+<tr>
+<td><strong>最差</strong>（全部进程级联转发）</td>
+<td>$N^2$ 条</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>💡 <strong>讲义提示</strong>：$N^2$ 的情况对应”每个进程都需要转发”——级联失败场景。教授说：”我每次看到级联失败，都怀疑有人在恶意发消息触发进程崩溃——这是安全漏洞的特征。”</p>
+</blockquote>
+<hr>
+<h2 id="六、Uniform-Reliable-Broadcast（URB）"><a href="#六、Uniform-Reliable-Broadcast（URB）" class="headerlink" title="六、Uniform Reliable Broadcast（URB）"></a>六、Uniform Reliable Broadcast（URB）</h2><h3 id="6-1-与-RB-的唯一区别"><a href="#6-1-与-RB-的唯一区别" class="headerlink" title="6.1 与 RB 的唯一区别"></a>6.1 与 RB 的唯一区别</h3><p>RB Agreement vs URB Uniform Agreement 的对比：</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>触发条件</th>
+<th>要求</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RB Agreement</strong></td>
+<td><strong>正确进程</strong>交付了 $m$</td>
+<td>所有<strong>正确进程</strong>也交付 $m$</td>
+</tr>
+<tr>
+<td><strong>URB Uniform Agreement</strong></td>
+<td><strong>任意进程</strong>（含故障）交付了 $m$</td>
+<td>所有<strong>正确进程</strong>也交付 $m$</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>本质上就是去掉了”correct”这个词的限定。</p>
+</blockquote>
+<h3 id="6-2-为什么需要-URB"><a href="#6-2-为什么需要-URB" class="headerlink" title="6.2 为什么需要 URB"></a>6.2 为什么需要 URB</h3><blockquote>
+<p>讲义原话：故障进程在崩溃前可能已经交付了消息，这在实时系统中可能已经被用户观察到，或被写入日志。URB 保证这种”已观察到的交付”不会导致不一致。</p>
+</blockquote>
+<h3 id="6-3-算法思路：等待所有存活进程确认"><a href="#6-3-算法思路：等待所有存活进程确认" class="headerlink" title="6.3 算法思路：等待所有存活进程确认"></a>6.3 算法思路：等待所有存活进程确认</h3><p><strong>核心思路</strong>：</p>
+<ul>
+<li>每条消息附带一个 <code>ack[m]</code> 集合，记录哪些进程已经 BEBDeliver 了该消息</li>
+<li><strong>只有当所有当前存活进程都确认后</strong>，才触发 URBDeliver</li>
+<li>同时采用 eager relay（急切转发）——收到消息立刻转发给所有人</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">Implements: UniformReliableBroadcast (URB)</span><br><span class="line">Uses: BEB, PerfectFailureDetector (P)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    delivered = &#123;&#125;, pending = &#123;&#125;, correct = &#123;p1,...,pn&#125;</span><br><span class="line">    ack[m] = &#123;&#125; for all m</span><br><span class="line"></span><br><span class="line">upon crash(pi):</span><br><span class="line">    correct = correct \ &#123;pi&#125;</span><br><span class="line"></span><br><span class="line">upon URBBroadcast(m):</span><br><span class="line">    pending += &#123;[self, m]&#125;</span><br><span class="line">    BEBBroadcast([Data, self, m])</span><br><span class="line"></span><br><span class="line">upon BEBDeliver(pi, [Data, pj, m]):</span><br><span class="line">    ack[m] += &#123;pi&#125;                           ← 记录 pi 已确认</span><br><span class="line">    if [pj, m] not in pending:</span><br><span class="line">        pending += &#123;[pj, m]&#125;</span><br><span class="line">        BEBBroadcast([Data, pj, m])          ← 急切转发</span><br><span class="line"></span><br><span class="line">when [pj,m] in pending</span><br><span class="line">     AND correct ⊆ ack[m]                   ← 所有存活进程都确认了</span><br><span class="line">     AND m not in delivered:</span><br><span class="line">    delivered += &#123;m&#125;</span><br><span class="line">    URBDeliver(pj, m)</span><br></pre></td></tr></table></figure>
+
+<h3 id="6-4-正确性证明思路（Lemma）"><a href="#6-4-正确性证明思路（Lemma）" class="headerlink" title="6.4 正确性证明思路（Lemma）"></a>6.4 正确性证明思路（Lemma）</h3><blockquote>
+<p><strong>引理</strong>：若某正确进程执行了 <code>BEBDeliver(m)</code>，则它最终也会 <code>URBDeliver(m)</code>。</p>
+</blockquote>
+<p><strong>证明链</strong>：</p>
+<ol>
+<li>执行 <code>BEBDeliver(m)</code> 的进程会执行 <code>BEBBroadcast(m)</code>（eager relay）</li>
+<li>由 BEB Validity，所有正确进程最终都会 <code>BEBDeliver(m)</code> → 都加入 <code>ack[m]</code></li>
+<li>Failure Detector 的 Completeness 保证：崩溃进程最终从 <code>correct</code> 中移除</li>
+<li>因此条件 <code>correct ⊆ ack[m]</code> 最终成立 → <code>URBDeliver(m)</code> 触发 ✓</li>
+</ol>
+<hr>
+<h2 id="七、FIFO-Reliable-Broadcast（RFB）"><a href="#七、FIFO-Reliable-Broadcast（RFB）" class="headerlink" title="七、FIFO Reliable Broadcast（RFB）"></a>七、FIFO Reliable Broadcast（RFB）</h2><h3 id="7-1-新增性质"><a href="#7-1-新增性质" class="headerlink" title="7.1 新增性质"></a>7.1 新增性质</h3><blockquote>
+<p><strong>FIFO Order</strong>：若 $p_i$ 先广播 $m_1$ 再广播 $m_2$，则任意其他进程 $p_j$ 不得在交付 $m_1$ 之前交付 $m_2$。</p>
+</blockquote>
+<h3 id="7-2-重要理解（来自讲义）"><a href="#7-2-重要理解（来自讲义）" class="headerlink" title="7.2 重要理解（来自讲义）"></a>7.2 重要理解（来自讲义）</h3><p>FIFO 是<strong>per-process 顺序</strong>：</p>
+<ul>
+<li>保证你收到 Alice 发的消息按 Alice 的发送顺序排列</li>
+<li>保证你收到 Bob 发的消息按 Bob 的发送顺序排列</li>
+<li><strong>但不保证</strong> Alice 和 Bob 的消息之间有任何顺序关系</li>
+</ul>
+<p>举例：Alice 发 A→B，Bob 发 X→Y，以下顺序都合法：</p>
+<ul>
+<li><code>X, A, B, Y</code> ✓</li>
+<li><code>X, Y, A, B</code> ✓</li>
+<li><code>A, X, B, Y</code> ✓</li>
+</ul>
+<h3 id="7-3-算法（在-RB-基础上加序列号-缓冲区）"><a href="#7-3-算法（在-RB-基础上加序列号-缓冲区）" class="headerlink" title="7.3 算法（在 RB 基础上加序列号+缓冲区）"></a>7.3 算法（在 RB 基础上加序列号+缓冲区）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">Implements: ReliableFifoBroadcast (RFB)</span><br><span class="line">Uses: ReliableBroadcast (RB)</span><br><span class="line"></span><br><span class="line">Init:</span><br><span class="line">    buffer = &#123;&#125;</span><br><span class="line">    next[src] = 1 for all src   ← 每个发送者下一个期待的序号</span><br><span class="line">    seq = 1                     ← 本进程的发送序号</span><br><span class="line"></span><br><span class="line">upon RFBBroadcast(m):</span><br><span class="line">    RBroadcast((seq, m))        ← 带上序列号</span><br><span class="line">    seq += 1</span><br><span class="line"></span><br><span class="line">upon RDeliver(src, (sn, m)):</span><br><span class="line">    buffer += (src, sn, m)</span><br><span class="line">    while (src&#x27;, sn&#x27;, m&#x27;) in buffer where sn&#x27; == next[src&#x27;]:</span><br><span class="line">        RFDeliver(src&#x27;, m&#x27;)</span><br><span class="line">        next[src&#x27;] += 1         ← 按序号顺序交付</span><br><span class="line">        buffer -= (src&#x27;, sn&#x27;, m&#x27;)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>本质</strong>：维护一个缓冲区，只有序号连续时才交付——类似 TCP 的有序交付机制。</p>
+</blockquote>
+<hr>
+<h2 id="八、Causal-Order-Broadcast（COB）"><a href="#八、Causal-Order-Broadcast（COB）" class="headerlink" title="八、Causal Order Broadcast（COB）"></a>八、Causal Order Broadcast（COB）</h2><h3 id="8-1-为什么需要因果广播"><a href="#8-1-为什么需要因果广播" class="headerlink" title="8.1 为什么需要因果广播"></a>8.1 为什么需要因果广播</h3><p>FIFO 只保证单进程内有序，但<strong>跨进程的因果依赖</strong>无法捕获：</p>
+<blockquote>
+<p>讲义例子（Bloomberg）：Bloomberg 终端广播金融事件。事件 B 是因为事件 A 发生而产生的（因果关系）。如果 B 在 A 之前被交付，用户会看到”结果”先于”原因”出现。</p>
+</blockquote>
+<h3 id="8-2-因果关系的定义"><a href="#8-2-因果关系的定义" class="headerlink" title="8.2 因果关系的定义"></a>8.2 因果关系的定义</h3><p>$m_1 \to m_2$（$m_1$ <strong>因果先于</strong> $m_2$）成立，当且仅当满足以下任一条件：</p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>FIFO Order</strong></td>
+<td>同一进程先广播 $m_1$ 再广播 $m_2$</td>
+</tr>
+<tr>
+<td><strong>Local Order</strong></td>
+<td>某进程先交付 $m_1$，然后广播 $m_2$</td>
+</tr>
+<tr>
+<td><strong>Transitivity</strong></td>
+<td>存在 $m_3$ 使得 $m_1 \to m_3$ 且 $m_3 \to m_2$</td>
+</tr>
+</tbody></table>
+<h3 id="8-3-新增性质"><a href="#8-3-新增性质" class="headerlink" title="8.3 新增性质"></a>8.3 新增性质</h3><blockquote>
+<p><strong>Causal Order</strong>：若 $m_1 \to m_2$，则任何进程交付 $m_2$ 之前必须先交付 $m_1$。</p>
+</blockquote>
+<h3 id="8-4-两种实现"><a href="#8-4-两种实现" class="headerlink" title="8.4 两种实现"></a>8.4 两种实现</h3><h4 id="方法一：携带历史（非阻塞）"><a href="#方法一：携带历史（非阻塞）" class="headerlink" title="方法一：携带历史（非阻塞）"></a>方法一：携带历史（非阻塞）</h4><p><strong>思路</strong>：每次广播时，把自己已知的<strong>全部历史消息</strong>一并打包发出。接收方先交付历史，再交付当前消息。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">upon COBBroadcast(m):</span><br><span class="line">    RBroadcast([Data, past, m])    ← past 包含所有之前的消息</span><br><span class="line">    past += &#123;[self, m]&#125;</span><br><span class="line"></span><br><span class="line">upon RDeliver(pi, [Data, past_m, m]):</span><br><span class="line">    for all [sn, m&#x27;] in past_m:    ← 先处理历史中未交付的消息</span><br><span class="line">        if m&#x27; not in delivered:</span><br><span class="line">            CODeliver(sn, m&#x27;)</span><br><span class="line">            delivered += &#123;m&#x27;&#125;</span><br><span class="line">    CODeliver(pi, m)</span><br><span class="line">    delivered += &#123;m&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>缺点</strong>：随着历史增长，消息体积越来越大。</p>
+<h4 id="方法二：向量时钟（阻塞，更推荐）"><a href="#方法二：向量时钟（阻塞，更推荐）" class="headerlink" title="方法二：向量时钟（阻塞，更推荐）"></a>方法二：向量时钟（阻塞，更推荐）</h4><p><strong>思路</strong>：每个进程维护向量时钟 $VC$，只广播计数而非完整历史。收到消息后，检查本地 $VC$ 是否已”追上”消息的因果前提，未追上则放入 <code>pending</code> 等待。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Init:</span><br><span class="line">    VC[pi] = 0 for all pi</span><br><span class="line">    pending = &#123;&#125;</span><br><span class="line"></span><br><span class="line">upon COBBroadcast(m):</span><br><span class="line">    CODeliver(self, m)</span><br><span class="line">    RBroadcast([Data, VC, m])</span><br><span class="line">    VC[self] += 1</span><br><span class="line"></span><br><span class="line">upon RDeliver(pj, [Data, VCm, m]):</span><br><span class="line">    if pj != self:</span><br><span class="line">        pending += &#123;(pj, VCm, m)&#125;</span><br><span class="line">    trigger DeliverPending</span><br><span class="line"></span><br><span class="line">upon DeliverPending:</span><br><span class="line">    while (sx, VCx, x) in pending</span><br><span class="line">          where VC[pj] &gt;= VCx[pj] for all pj:   ← 本地时钟已满足因果前提</span><br><span class="line">        pending -= (sx, VCx, x)</span><br><span class="line">        CODeliver(sx, x)</span><br><span class="line">        VC[sx] += 1</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>💡 <strong>讲义原话</strong>：向量时钟方法”更简洁”，因为”回到时钟，就完事了”。Bloomberg 使用的实现与此几乎相同。</p>
+</blockquote>
+<blockquote>
+<p>⚠️ <strong>考试提示</strong>：向量时钟的 IC1&#x2F;IC2 形式化条件<strong>不需要背</strong>。但需要理解：向量时钟能捕获全局因果顺序的<strong>原因</strong>，以及它与 FIFO 的区别。</p>
+</blockquote>
+<hr>
+<h2 id="九、全局总结与层次关系"><a href="#九、全局总结与层次关系" class="headerlink" title="九、全局总结与层次关系"></a>九、全局总结与层次关系</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">COB（因果广播）        ← &quot;全局 FIFO&quot;，跨进程因果顺序</span><br><span class="line">    │</span><br><span class="line">    └── RFB（FIFO广播）← 单进程内有序</span><br><span class="line">            │</span><br><span class="line">            ├── URB（统一可靠广播）← 故障进程也尽量交付</span><br><span class="line">            │       │</span><br><span class="line">            │       └── RB（可靠广播）← 发送者独立性</span><br><span class="line">            │               │</span><br><span class="line">            │               └── BEB（尽力广播）← 最基础</span><br><span class="line">            │</span><br><span class="line">            └── UFB（统一 FIFO 广播）← URB + FIFO</span><br></pre></td></tr></table></figure>
+
+<h3 id="性质对比一览"><a href="#性质对比一览" class="headerlink" title="性质对比一览"></a>性质对比一览</h3><table>
+<thead>
+<tr>
+<th>性质</th>
+<th align="center">BEB</th>
+<th align="center">RB</th>
+<th align="center">URB</th>
+<th align="center">RFB</th>
+<th align="center">COB</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Validity</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>No Duplication</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>No Creation</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Agreement</td>
+<td align="center">—</td>
+<td align="center">✓（correct）</td>
+<td align="center">✓（all）</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>FIFO Order</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+<td align="center">✓</td>
+</tr>
+<tr>
+<td>Causal Order</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">—</td>
+<td align="center">✓</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="十、关键概念辨析"><a href="#十、关键概念辨析" class="headerlink" title="十、关键概念辨析"></a>十、关键概念辨析</h2><h3 id="Agreement-vs-Uniform-Agreement"><a href="#Agreement-vs-Uniform-Agreement" class="headerlink" title="Agreement vs Uniform Agreement"></a>Agreement vs Uniform Agreement</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">RB Agreement:       if a CORRECT process delivers m</span><br><span class="line">                    → all correct processes deliver m</span><br><span class="line"></span><br><span class="line">URB Uniform Agreement: if ANY process delivers m (even faulty)</span><br><span class="line">                       → all correct processes deliver m</span><br></pre></td></tr></table></figure>
+
+<h3 id="FIFO-vs-Causal-Order"><a href="#FIFO-vs-Causal-Order" class="headerlink" title="FIFO vs Causal Order"></a>FIFO vs Causal Order</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">FIFO：   per-process 顺序</span><br><span class="line">         Alice: A→B 保证，Bob: X→Y 保证</span><br><span class="line">         但 A,B 与 X,Y 之间的顺序不保证</span><br><span class="line"></span><br><span class="line">Causal： global 因果顺序</span><br><span class="line">         只要 m1 → m2（因果关系），</span><br><span class="line">         任何进程都必须在 m2 前看到 m1</span><br></pre></td></tr></table></figure>
+
+<h3 id="为何-URB-需要等待所有进程确认"><a href="#为何-URB-需要等待所有进程确认" class="headerlink" title="为何 URB 需要等待所有进程确认"></a>为何 URB 需要等待所有进程确认</h3><blockquote>
+<p>因为如果一个进程在崩溃前交付了 $m$，根据 Uniform Agreement，所有正确进程都必须也交付 $m$。所以必须在”确认所有存活进程都能看到这条消息”后，才能安全交付。</p>
+</blockquote>
+<hr>
+<h2 id="十一、考试备考要点"><a href="#十一、考试备考要点" class="headerlink" title="十一、考试备考要点"></a>十一、考试备考要点</h2><p>✅ <strong>需要掌握</strong>：</p>
+<ul>
+<li>五种广播抽象各自的核心性质（尤其是第四条）</li>
+<li>BEB → RB → URB 之间的演进逻辑（每步加了什么）</li>
+<li>RB 算法的 relay 机制与 Failure Detector 的配合</li>
+<li>URB 算法为何需要”等待所有存活进程确认”</li>
+<li>FIFO vs Causal Order 的本质区别</li>
+<li>向量时钟<strong>为什么</strong>能解决因果顺序问题（不需要背公式）</li>
+</ul>
+<p>❌ <strong>不需要背</strong>：</p>
+<ul>
+<li>向量时钟的 IC1&#x2F;IC2 形式化条件</li>
+<li>算法伪代码的完整逐行细节</li>
+<li>具体的 rp2p、sp2p 实现细节</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.x1ren.top">逸人</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.x1ren.top/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/">https://blog.x1ren.top/2026/03/30/UOB/Dependable and Distributed Systems/10_Reliable Broadcast Algorithms/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.x1ren.top" target="_blank">逸人の博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E5%88%86%E5%B8%83%E5%BC%8F/">分布式</a></div><div class="post-share"><div class="social-share" data-image="/./img/avatar.jpg" data-sites="twitter,wechat,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related full-width" href="/2026/03/29/C++/cpp12/" title="STL 容器"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">STL 容器</div></div><div class="info-2"><div class="info-item-1">STL 容器总结笔记STL 容器分为两大类：序列式容器 和 关联式容器。一、序列式容器按照元素插入的顺序存储，不会自动排序。    容器 底层结构 特点    vector 动态数组 支持下标随机访问；适合尾部插入   array 静态数组 原生数组的标准化封装；大小固定，不能扩容   deque 分段连续空间 双端队列；支持两端频繁插入和删除   list 双向链表 支持在中间任意位置 O(1) 插入和删除   forward_list 单向链表 比 list 节省一半指针内存；只能单向遍历   stack 基于 vector 栈；先进后出（LIFO）   queue 基于 deque 队列；先进先出（FIFO）   priority_queue 基于堆（vector） 优先队列；基于堆排序，元素按优先级出队    二、关联式容器元素按照某种规则组织，支持高效查找。分为有序和无序两类。 1. 有序关联容器（基于红黑树）查找时间复杂度：O(log n)    容器 存储内容 是否允许重复键    set 仅键（key） ❌ 不允许   multiset 仅键（key） ✅ 允许 ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/03/27/UOB/Dependable%20and%20Distributed%20Systems/Dependable%20and%20Distributed%20Systems/" title="分布式系统课程总结"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-03-27</div><div class="info-item-2">分布式系统课程总结</div></div><div class="info-2"><div class="info-item-1">最后一节课的内容</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">逸人</div><div class="author-info-description">记忆保存库</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">49</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">37</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/Mr-EEEeee"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/x1renn" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:x1ren@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/id/979869114/" target="_blank" title="Steam"><i class="fa-brands fa-steam" style="color: #hdhfbb;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽哈喽🍍</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Topic-10-Reliable-Broadcast-Algorithms"><span class="toc-number">1.</span> <span class="toc-text">Topic 10 - Reliable Broadcast Algorithms</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E6%95%B4%E4%BD%93%E6%9E%B6%E6%9E%84%E4%B8%8E%E8%AE%BE%E8%AE%A1%E5%93%B2%E5%AD%A6"><span class="toc-number">1.1.</span> <span class="toc-text">一、整体架构与设计哲学</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%9F%BA%E7%A1%80%E5%B7%A5%E5%85%B7%E5%8C%85%EF%BC%88The-Toolkit%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">二、基础工具包（The Toolkit）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E4%BA%94%E7%A7%8D%E5%B9%BF%E6%92%AD%E6%8A%BD%E8%B1%A1%E6%80%BB%E8%A7%88"><span class="toc-number">1.3.</span> <span class="toc-text">三、五种广播抽象总览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81Best-Effort-Broadcast%EF%BC%88BEB%EF%BC%89"><span class="toc-number">1.4.</span> <span class="toc-text">四、Best-Effort Broadcast（BEB）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E4%B8%89%E6%9D%A1%E5%BD%A2%E5%BC%8F%E5%8C%96%E6%80%A7%E8%B4%A8"><span class="toc-number">1.4.1.</span> <span class="toc-text">4.1 三条形式化性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E5%85%B3%E9%94%AE%E7%BC%BA%E9%99%B7"><span class="toc-number">1.4.2.</span> <span class="toc-text">4.2 关键缺陷</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%AE%97%E6%B3%95%EF%BC%88%E5%9F%BA%E4%BA%8E-Reliable-Links%EF%BC%89"><span class="toc-number">1.4.3.</span> <span class="toc-text">4.3 算法（基于 Reliable Links）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81Reliable-Broadcast%EF%BC%88RB%EF%BC%89"><span class="toc-number">1.5.</span> <span class="toc-text">五、Reliable Broadcast（RB）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E6%96%B0%E5%A2%9E%E7%AC%AC%E5%9B%9B%E6%9D%A1%E6%80%A7%E8%B4%A8"><span class="toc-number">1.5.1.</span> <span class="toc-text">5.1 新增第四条性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%9B%B4%E8%A7%89%E7%90%86%E8%A7%A3%EF%BC%88%E6%9D%A5%E8%87%AA%E8%AE%B2%E4%B9%89%EF%BC%89"><span class="toc-number">1.5.2.</span> <span class="toc-text">5.2 直觉理解（来自讲义）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E5%85%B8%E5%9E%8B%E5%9C%BA%E6%99%AF%E5%9B%BE%E8%A7%A3"><span class="toc-number">1.5.3.</span> <span class="toc-text">5.3 典型场景图解</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E7%AE%97%E6%B3%95"><span class="toc-number">1.5.4.</span> <span class="toc-text">5.4 算法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-%E5%A4%8D%E6%9D%82%E5%BA%A6%E5%88%86%E6%9E%90"><span class="toc-number">1.5.5.</span> <span class="toc-text">5.5 复杂度分析</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81Uniform-Reliable-Broadcast%EF%BC%88URB%EF%BC%89"><span class="toc-number">1.6.</span> <span class="toc-text">六、Uniform Reliable Broadcast（URB）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E4%B8%8E-RB-%E7%9A%84%E5%94%AF%E4%B8%80%E5%8C%BA%E5%88%AB"><span class="toc-number">1.6.1.</span> <span class="toc-text">6.1 与 RB 的唯一区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-URB"><span class="toc-number">1.6.2.</span> <span class="toc-text">6.2 为什么需要 URB</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E7%AE%97%E6%B3%95%E6%80%9D%E8%B7%AF%EF%BC%9A%E7%AD%89%E5%BE%85%E6%89%80%E6%9C%89%E5%AD%98%E6%B4%BB%E8%BF%9B%E7%A8%8B%E7%A1%AE%E8%AE%A4"><span class="toc-number">1.6.3.</span> <span class="toc-text">6.3 算法思路：等待所有存活进程确认</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-4-%E6%AD%A3%E7%A1%AE%E6%80%A7%E8%AF%81%E6%98%8E%E6%80%9D%E8%B7%AF%EF%BC%88Lemma%EF%BC%89"><span class="toc-number">1.6.4.</span> <span class="toc-text">6.4 正确性证明思路（Lemma）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81FIFO-Reliable-Broadcast%EF%BC%88RFB%EF%BC%89"><span class="toc-number">1.7.</span> <span class="toc-text">七、FIFO Reliable Broadcast（RFB）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-%E6%96%B0%E5%A2%9E%E6%80%A7%E8%B4%A8"><span class="toc-number">1.7.1.</span> <span class="toc-text">7.1 新增性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-2-%E9%87%8D%E8%A6%81%E7%90%86%E8%A7%A3%EF%BC%88%E6%9D%A5%E8%87%AA%E8%AE%B2%E4%B9%89%EF%BC%89"><span class="toc-number">1.7.2.</span> <span class="toc-text">7.2 重要理解（来自讲义）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-3-%E7%AE%97%E6%B3%95%EF%BC%88%E5%9C%A8-RB-%E5%9F%BA%E7%A1%80%E4%B8%8A%E5%8A%A0%E5%BA%8F%E5%88%97%E5%8F%B7-%E7%BC%93%E5%86%B2%E5%8C%BA%EF%BC%89"><span class="toc-number">1.7.3.</span> <span class="toc-text">7.3 算法（在 RB 基础上加序列号+缓冲区）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81Causal-Order-Broadcast%EF%BC%88COB%EF%BC%89"><span class="toc-number">1.8.</span> <span class="toc-text">八、Causal Order Broadcast（COB）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81%E5%9B%A0%E6%9E%9C%E5%B9%BF%E6%92%AD"><span class="toc-number">1.8.1.</span> <span class="toc-text">8.1 为什么需要因果广播</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-2-%E5%9B%A0%E6%9E%9C%E5%85%B3%E7%B3%BB%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="toc-number">1.8.2.</span> <span class="toc-text">8.2 因果关系的定义</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-3-%E6%96%B0%E5%A2%9E%E6%80%A7%E8%B4%A8"><span class="toc-number">1.8.3.</span> <span class="toc-text">8.3 新增性质</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-4-%E4%B8%A4%E7%A7%8D%E5%AE%9E%E7%8E%B0"><span class="toc-number">1.8.4.</span> <span class="toc-text">8.4 两种实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%B8%80%EF%BC%9A%E6%90%BA%E5%B8%A6%E5%8E%86%E5%8F%B2%EF%BC%88%E9%9D%9E%E9%98%BB%E5%A1%9E%EF%BC%89"><span class="toc-number">1.8.4.1.</span> <span class="toc-text">方法一：携带历史（非阻塞）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E4%BA%8C%EF%BC%9A%E5%90%91%E9%87%8F%E6%97%B6%E9%92%9F%EF%BC%88%E9%98%BB%E5%A1%9E%EF%BC%8C%E6%9B%B4%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">1.8.4.2.</span> <span class="toc-text">方法二：向量时钟（阻塞，更推荐）</span></a></li></ol></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B9%9D%E3%80%81%E5%85%A8%E5%B1%80%E6%80%BB%E7%BB%93%E4%B8%8E%E5%B1%82%E6%AC%A1%E5%85%B3%E7%B3%BB"><span class="toc-number">1.9.</span> <span class="toc-text">九、全局总结与层次关系</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%B4%A8%E5%AF%B9%E6%AF%94%E4%B8%80%E8%A7%88"><span class="toc-number">1.9.1.</span> <span class="toc-text">性质对比一览</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E3%80%81%E5%85%B3%E9%94%AE%E6%A6%82%E5%BF%B5%E8%BE%A8%E6%9E%90"><span class="toc-number">1.10.</span> <span class="toc-text">十、关键概念辨析</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Agreement-vs-Uniform-Agreement"><span class="toc-number">1.10.1.</span> <span class="toc-text">Agreement vs Uniform Agreement</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FIFO-vs-Causal-Order"><span class="toc-number">1.10.2.</span> <span class="toc-text">FIFO vs Causal Order</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%BA%E4%BD%95-URB-%E9%9C%80%E8%A6%81%E7%AD%89%E5%BE%85%E6%89%80%E6%9C%89%E8%BF%9B%E7%A8%8B%E7%A1%AE%E8%AE%A4"><span class="toc-number">1.10.3.</span> <span class="toc-text">为何 URB 需要等待所有进程确认</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8D%81%E4%B8%80%E3%80%81%E8%80%83%E8%AF%95%E5%A4%87%E8%80%83%E8%A6%81%E7%82%B9"><span class="toc-number">1.11.</span> <span class="toc-text">十一、考试备考要点</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/30/UOB/Dependable%20and%20Distributed%20Systems/10_Reliable%20Broadcast%20Algorithms/" title="分布式系统第10章">分布式系统第10章</a><time datetime="2026-03-29T23:43:19.664Z" title="更新于 2026-03-30 00:43:19">2026-03-30</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/03/29/C++/cpp12/" title="STL 容器"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="STL 容器"/></a><div class="content"><a class="title" href="/2026/03/29/C++/cpp12/" title="STL 容器">STL 容器</a><time datetime="2026-03-29T11:30:43.554Z" title="更新于 2026-03-29 12:30:43">2026-03-29</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/27/UOB/Dependable%20and%20Distributed%20Systems/Dependable%20and%20Distributed%20Systems/" title="分布式系统课程总结">分布式系统课程总结</a><time datetime="2026-03-27T16:45:46.386Z" title="更新于 2026-03-27 16:45:46">2026-03-27</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2025/07/28/C++/cpp1/" title="C++ 性能优化笔记"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="C++ 性能优化笔记"/></a><div class="content"><a class="title" href="/2025/07/28/C++/cpp1/" title="C++ 性能优化笔记">C++ 性能优化笔记</a><time datetime="2026-03-24T09:23:53.623Z" title="更新于 2026-03-24 09:23:53">2026-03-24</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/03/17/%E5%BC%80%E5%8F%91/btv1/" title="btv 开发记录">btv 开发记录</a><time datetime="2026-03-24T09:21:53.076Z" title="更新于 2026-03-24 09:21:53">2026-03-24</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By 逸人</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.4.3"></script><script src="/js/main.js?v=5.4.3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Twikoo' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script>window.newestComments = {
+  changeContent: content => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<code>.*?<\/code>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g, "") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0, 150) + '...'
+    }
+    return content
+  },
+
+  generateHtml: (array, ele) => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class="aside-list-item">'
+
+        if (true && array[i].avatar) {
+          const imgAttr = 'src'
+          const lazyloadNative = ''
+          result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+        }
+
+        result += `<div class="content">
+        <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
+        <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '暂无评论'
+    }
+
+    ele.innerHTML = result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh(ele)
+  },
+
+  newestCommentInit: (name, getComment) => {
+    const $dom = document.querySelector('#card-newest-comments .aside-list')
+    if ($dom) {
+      const data = btf.saveToLocal.get(name)
+      if (data) {
+        newestComments.generateHtml(JSON.parse(data), $dom)
+      } else {
+        getComment($dom)
+      }
+    }
+  },
+
+  run: (name, getComment) => {
+    newestComments.newestCommentInit(name, getComment)
+    btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
+  }
+}</script><script>window.addEventListener('load', () => {
+  const keyName = 'twikoo-newest-comments'
+  const { changeContent, generateHtml, run } = window.newestComments
+
+  const getComment = ele => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://1-zeta-olive.vercel.app/',
+        region: '',
+        pageSize: 4,
+        includeReply: true
+      }).then(res => {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        btf.saveToLocal.set(keyName, JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray, ele)
+      }).catch(err => {
+        console.error(err)
+        ele.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  run(keyName, getComment)
+})</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/click-heart.min.js" async="async" mobile="false"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="https://testingcf.jsdelivr.net/gh/Mr-EEEeee/Mr-EEEeee.github.io/js/search/local-search.js"></script></div></div></body></html>
