@@ -1665,6 +1665,12 @@
 <li><input checked="" disabled="" type="checkbox"> 直播录制</li>
 <li><input disabled="" type="checkbox"> AI 拓展</li>
 </ul>
+<h3 id="暂缓修复内容"><a href="#暂缓修复内容" class="headerlink" title="暂缓修复内容"></a>暂缓修复内容</h3><ol>
+<li>本地播放或许可改为“显示时间轴”开关，仍然串流播放，只是单独提供回退功能</li>
+<li>布局切换卡住</li>
+<li>心跳包(API)</li>
+<li>账户登录与退出</li>
+</ol>
 <h3 id="细节清单"><a href="#细节清单" class="headerlink" title="细节清单"></a>细节清单</h3><ul>
 <li>观看直播<ul>
 <li><input checked="" disabled="" type="checkbox"> 直播播放<br>默认使用 FLV 协议进行直播串流播放；本地播放需开启录制功能使用 ffmpeg 解复用后封装成 fmp4 切片播放。</li>
