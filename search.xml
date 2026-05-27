@@ -1669,30 +1669,44 @@
 <li>本地播放或许可改为“显示时间轴”开关，仍然串流播放，只是单独提供回退功能</li>
 <li>布局切换卡住</li>
 <li>心跳包(API)</li>
-<li>账户登录与退出</li>
 </ol>
 <h3 id="细节清单"><a href="#细节清单" class="headerlink" title="细节清单"></a>细节清单</h3><ul>
 <li>观看直播<ul>
 <li><input checked="" disabled="" type="checkbox"> 直播播放<br>默认使用 FLV 协议进行直播串流播放；本地播放需开启录制功能使用 ffmpeg 解复用后封装成 fmp4 切片播放。</li>
-<li><input checked="" disabled="" type="checkbox"> 布局选择<br>提供15种默认布局，和1种自定义布局，共16种。</li>
-<li><input checked="" disabled="" type="checkbox"> 设置记忆<br>播放器设置（直播间、画质、线程和布局等）保存在 config.yaml 文件中，设置选项保存在 settings.yaml 文件中。</li>
+<li><input checked="" disabled="" type="checkbox"> 布局选择<ul>
+<li>提供15种默认布局，和1种自定义布局，共16种。</li>
+</ul>
+</li>
+<li><input checked="" disabled="" type="checkbox"> 设置记忆<ul>
+<li>播放器设置（直播间、画质、线程和布局等）保存在 config.yaml 文件中，设置选项保存在 settings.yaml 文件中。</li>
+</ul>
+</li>
 <li><input checked="" disabled="" type="checkbox"> 基本控制（视频、音频、画质、房间号、线路）</li>
 <li><input checked="" disabled="" type="checkbox"> 全局控制</li>
 <li><input checked="" disabled="" type="checkbox"> 登录</li>
 <li><input disabled="" type="checkbox"> 直播间监测（是否开播，已播时间，距上次直播时间）</li>
 <li><input disabled="" type="checkbox"> 直播间快速设置</li>
-<li><input disabled="" type="checkbox"> 2<strong>弹幕渲染</strong></li>
+<li><input checked="" disabled="" type="checkbox"> 2<strong>弹幕渲染</strong></li>
 <li><input disabled="" type="checkbox"> SC 显示</li>
 <li><input checked="" disabled="" type="checkbox"> 布局边界控制<br>模仿 blender 前端操作，提供调整、拆分和合并等功能。</li>
-<li><input checked="" disabled="" type="checkbox"> 快速回放（开启视频录制后增加进度控制条）<br>在设置中：“直播缓存设置”选项用于控制串流缓存大小（内存占用）<br><em>与刷新的交互还需要优化</em></li>
+<li><input checked="" disabled="" type="checkbox"> 快速回放（开启视频录制后增加进度控制条）<br>- 在设置中：“直播缓存设置”选项用于控制串流缓存大小（内存占用）<br><em>与刷新的交互还需要优化</em></li>
 <li><input checked="" disabled="" type="checkbox"> 设置（顶部控制栏新增“设置”选项）</li>
 </ul>
 </li>
 <li>直播录制<ul>
-<li><input checked="" disabled="" type="checkbox"> 1<strong>视频录制</strong><br>开启“即时重放”时观看界面仍以串流形式播放，另启用 ffmpeg 进程在后台保存 fmp4 分片，使用缓存持续限制并保留默认150个分片用于即时重放，“保存即时重放”将最新的 N 个分片合并导出为 MP4 文件；<br>录制功能将解除对分片数量的限制，“停止录制”可以停止录制并所有最后片段。<br>在设置中：添加“录制缓存设置”选项，即时重放缓存大小（环形缓存分片数量），添加“磁盘占用”选项用于设置磁盘占用上限，分为全部（cache 文件夹占用）上限和窗口（对应 room 文件夹占用）上限（不设置为无上限，达到上限时优先删除最旧的分片）</li>
+<li><input checked="" disabled="" type="checkbox"> 1<strong>视频录制</strong><ul>
+<li>开启“即时重放”时观看界面仍以串流形式播放，另启用 ffmpeg 进程在后台保存 fmp4 分片，使用缓存持续限制并保留默认150个分片用于即时重放，“保存即时重放”将最新的 N 个分片合并导出为 MP4 文件；</li>
+<li>录制功能将解除对分片数量的限制，“停止录制”可以停止录制并所有最后片段。</li>
+<li>在设置中：添加“录制缓存设置”选项，即时重放缓存大小（环形缓存分片数量），添加“磁盘占用”选项用于设置磁盘占用上限，分为全部（cache 文件夹占用）上限和窗口（对应 room 文件夹占用）上限（不设置为无上限，达到上限时优先删除最旧的分片）</li>
+</ul>
+</li>
 <li><input disabled="" type="checkbox"> 2<strong>弹幕录制</strong></li>
 <li><input disabled="" type="checkbox"> SC 录制</li>
-<li><input disabled="" type="checkbox"> 3<strong>热点切片</strong>（按弹幕密度） &#x2F; 关键词切片（用于舆情监测，可嵌入 AI 功能）<br>（待定）弹幕密度每30分钟计算平均密度，切片每30秒获取热点（超出平均密度时）。</li>
+<li><input checked="" disabled="" type="checkbox"> 3<strong>热点切片</strong>（按弹幕密度） &#x2F; 关键词切片（用于舆情监测，可嵌入 AI 功能）<ul>
+<li>多阈值多窗口统计分数</li>
+<li>热点片段发送给 AI 检测是否违规</li>
+</ul>
+</li>
 </ul>
 </li>
 <li>AI 功能<ul>
@@ -1700,8 +1714,13 @@
 <li><input disabled="" type="checkbox"> 直播（切片）总结</li>
 </ul>
 </li>
+<li>其他<ul>
+<li><input disabled="" type="checkbox"> 超分辨率</li>
+</ul>
+</li>
 </ul>
 <h2 id="优化"><a href="#优化" class="headerlink" title="优化"></a>优化</h2><h3 id="代码结构"><a href="#代码结构" class="headerlink" title="代码结构"></a>代码结构</h3><ul>
+<li><input disabled="" type="checkbox"> 去除 mpv ffmpeg 的动态库依赖</li>
 <li><input disabled="" type="checkbox"> 现代化</li>
 <li><input disabled="" type="checkbox"> 模块化</li>
 <li><input disabled="" type="checkbox"> 设计模式</li>
