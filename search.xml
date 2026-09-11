@@ -2747,17 +2747,7 @@
 <li>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。<br>微软官方WinRTFrameReader标准流程:<br>①寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>②配置与初始化（InitializeSettings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③定位数据源（FindSource）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④建立阅读器（CreateReader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤订阅事件（SubscribeEvent)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥开机拉流（Start)：正式命令摄像头开始录像。<br>⑦拆解快递（FrameArrivedCallback)：获取最新帧，进行格式转换，并提取为++能读写的裸内存。<br>⑧关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</li>
 <li><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>①确定截取哪个窗口<br>②创建两缓冲帧池<br>③注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</li>
 <li>屏幕采集窗口最小化边界：是指在创建帧池前判断 <code>size.Width&lt;=0 || size.Height&lt;=0</code> 失败时返回，避免用非法尺寸创建资源，是启动阶段的防御。</li>
-<li>WASAPI：音频捕获客户端（CaptureClient）<ol>
-<li>环境准备（COM Initialization)：初始化底层组件环境。</li>
-<li>发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。</li>
-<li>激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。</li>
-<li>协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。</li>
-<li>获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。</li>
-<li>启动数据流（Start)）：命令声卡开始录音。</li>
-<li>捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。</li>
-<li>停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</li>
-</ol>
-</li>
+<li>WASAPI：音频捕获客户端（CaptureClient）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>②发现设备（DeviceEnumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（ActivatelAudioClient)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate&amp;Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudioCaptureClient)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start)）：命令声卡开始录音。<br>⑦ 捕获大循环（TheCaptureLoop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧停止与清理（Stop&amp;Cleanup）：停止流，释放所有资源。</li>
 <li>音频统一浮点32位格式便于乘音量、混合和重采样。</li>
 <li>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</li>
 </ol>
