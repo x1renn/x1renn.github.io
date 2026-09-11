@@ -2752,9 +2752,9 @@
 <li>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</li>
 </ol>
 <h3 id="编码推流模块"><a href="#编码推流模块" class="headerlink" title="编码推流模块"></a>编码推流模块</h3><ol>
-<li>NVENC&#x2F;AMF&#x2F;x264 硬编软编回退：NVENC 使用 NVIDIA 视频编码硬件；AMF 是 AMD 媒体接口，这里用于硬件编码；x264 用 CPU 做 H.264 软件编码。可以都输出 H.264。</li>
-<li>码控模式切换：</li>
-</ol>
+<li><p>NVENC&#x2F;AMF&#x2F;x264 硬编软编回退：NVENC 使用 NVIDIA 视频编码硬件；AMF 是 AMD 媒体接口，这里用于硬件编码；x264 用 CPU 做 H.264 软件编码。可以都输出 H.264。</p>
+</li>
+<li><p>码控模式切换：</p>
 <table>
 <thead>
 <tr>
@@ -2779,10 +2779,10 @@
 <td>码率随内容变化；不等于所有场景的感知画质完全相同</td>
 </tr>
 </tbody></table>
-<ol start="3">
-<li>低延迟策略：关闭 B 帧 <code>ctx-&gt;max_b_frames=0;</code>；缩减编码器缓冲区大小 <code>ctx-&gt;rc_buffer_size = bitrate /2;</code>，使编码器在网卡时立刻降低画质，而不是堆积帧；编码器低延迟参数优化；减小网络数据包大小和缓冲。<br>RTMP 调优：RTMP 用来把 FLV 音视频流经网络持续发送到服务器。TCP 保证有序可靠传输，但丢包后的重传等待可能带来延迟。<code>tcp_nodelay=1</code> 请求禁用 Nagle 算法合并小包的等待，让系统有包就发，不为了节省头部开销而“拼凑大包”，降低发送延迟。</li>
-<li>拥塞降码率与丢非关键帧：</li>
-</ol>
+</li>
+<li><p>低延迟策略：关闭 B 帧 <code>ctx-&gt;max_b_frames=0;</code>；缩减编码器缓冲区大小 <code>ctx-&gt;rc_buffer_size = bitrate /2;</code>，使编码器在网卡时立刻降低画质，而不是堆积帧；编码器低延迟参数优化；减小网络数据包大小和缓冲。<br>RTMP 调优：RTMP 用来把 FLV 音视频流经网络持续发送到服务器。TCP 保证有序可靠传输，但丢包后的重传等待可能带来延迟。<code>tcp_nodelay=1</code> 请求禁用 Nagle 算法合并小包的等待，让系统有包就发，不为了节省头部开销而“拼凑大包”，降低发送延迟。</p>
+</li>
+<li><p>拥塞降码率与丢非关键帧：</p>
 <table>
 <thead>
 <tr>
@@ -2810,39 +2810,36 @@
 <td>两套拥塞控制：第一套根据队列包数量；第二套根据处理一张视频帧，包括相应的格式处理、同步、编码和编码包入队总耗时。</td>
 <td></td>
 </tr>
-</tbody></table>
-<table>
-<thead>
 <tr>
-<th>规则</th>
-<th>算的是什么</th>
-<th>数字例子</th>
+<td>规则</td>
+<td>算的是什么</td>
 </tr>
-</thead>
-<tbody><tr>
+<tr>
+<td>——————————————</td>
+<td>——————————–</td>
+</tr>
+<tr>
 <td>单次耗时大于 200 ms，或平滑耗时大于 150 ms</td>
 <td>判为拥塞</td>
-<td>不是队列超过 20&#x2F;30 的那套判断</td>
 </tr>
 <tr>
 <td>前两次连续拥塞</td>
 <td>该控制器自己的当前目标×0.7</td>
-<td>2500→1750→1225 kbps</td>
 </tr>
 <tr>
 <td>连续拥塞次数超过 2</td>
 <td>该控制器自己的当前目标×0.5</td>
-<td>1225→612.5 kbps，再受上下限约束</td>
 </tr>
 <tr>
 <td>符合恢复条件</td>
 <td>每次增加 50000 bit&#x2F;s，即 50 kbps</td>
-<td>1500→1550 kbps，不是增加 50%</td>
 </tr>
 </tbody></table>
-<ol start="5">
-<li>断线重连：<em>“发送线程发现网络写包失败后，会标记对应输出不可用，暂时跳过这一路发送，并周期性尝试关闭旧 IO、重新打开原推流地址。连接成功后清除失败标记，恢复后续包的发送。重试由出队包计数触发（30个）；另外，网络连接恢复和媒体播放恢复是两回事，还要验证媒体头、编码参数、关键帧和时间戳是否正确恢复。”</em></li>
-<li>音视频同步：<br>用已处理音频样本累计数作为同步参考，并用视频 PTS 计数推算视频时长。<br>计算 PTS 以实现同步。DTS 由编码器生成，在关闭 B 帧的情况下，理论上两者相同。<br><em>“把音频样本数和视频帧计数换算成秒，以音频为参考。视频落后就重复画面补时间，视频超前就跳过输入等待；阈值是一帧时长，单次最多补五帧。”</em><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 音频样本数除以采样率，得到音频时间。若 diff&gt;一帧时长，音频走得更远，视频时间落后，需要重复编码当前画面，让视频计数追上；补帧数限制最多 5。若 diff&lt;-一帧时长，视频走得太快，丢掉本次输入，不增加视频计数，等音频追上。</span></span><br><span class="line"><span class="type">double</span> audioSec = (<span class="type">double</span>)m_totalAudioSamples / m_config.audio.sampleRate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 视频计数除以帧率，得到视频时间。</span></span><br><span class="line"><span class="type">double</span> videoSec = (<span class="type">double</span>)m_videoPtsCounter / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> frameDur = <span class="number">1.0</span> / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> diff = audioSec - videoSec;</span><br></pre></td></tr></table></figure></li>
+</li>
+<li><p>断线重连：<em>“发送线程发现网络写包失败后，会标记对应输出不可用，暂时跳过这一路发送，并周期性尝试关闭旧 IO、重新打开原推流地址。连接成功后清除失败标记，恢复后续包的发送。重试由出队包计数触发（30个）；另外，网络连接恢复和媒体播放恢复是两回事，还要验证媒体头、编码参数、关键帧和时间戳是否正确恢复。”</em></p>
+</li>
+<li><p>音视频同步：<br>用已处理音频样本累计数作为同步参考，并用视频 PTS 计数推算视频时长。<br>计算 PTS 以实现同步。DTS 由编码器生成，在关闭 B 帧的情况下，理论上两者相同。<br><em>“把音频样本数和视频帧计数换算成秒，以音频为参考。视频落后就重复画面补时间，视频超前就跳过输入等待；阈值是一帧时长，单次最多补五帧。”</em></p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 音频样本数除以采样率，得到音频时间。若 diff&gt;一帧时长，音频走得更远，视频时间落后，需要重复编码当前画面，让视频计数追上；补帧数限制最多 5。若 diff&lt;-一帧时长，视频走得太快，丢掉本次输入，不增加视频计数，等音频追上。</span></span><br><span class="line"><span class="type">double</span> audioSec = (<span class="type">double</span>)m_totalAudioSamples / m_config.audio.sampleRate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 视频计数除以帧率，得到视频时间。</span></span><br><span class="line"><span class="type">double</span> videoSec = (<span class="type">double</span>)m_videoPtsCounter / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> frameDur = <span class="number">1.0</span> / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> diff = audioSec - videoSec;</span><br></pre></td></tr></table></figure></li>
 </ol>
 <h3 id="端云内容模块"><a href="#端云内容模块" class="headerlink" title="端云内容模块"></a>端云内容模块</h3><ol>
 <li>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。<br><em>项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。</em></li>
