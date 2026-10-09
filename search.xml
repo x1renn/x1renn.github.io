@@ -2807,15 +2807,10 @@
 <td>找“非常亮、接近白色”的像素：RGB 三通道都很高</td>
 <td>已经饱和的亮斑没有细节可恢复，继续增强只会更刺眼</td>
 </tr>
-<tr>
-<td><del><em>“我的优化思路分为<strong>计算</strong>和<strong>数据传输</strong>两部分，让 GPU 和 CPU 混合处理。计算方面，暗区、反光区掩膜的生成需要对大量像素重复进行计算和判断，可以用 SIMD 指令在 CPU 上进行并行计算，批量生成掩膜，再由 GPU 执行原图与增强图的逐像素混合。数据传输方面，利用 CUDA 尽可能让图像处理按顺序在 GpuMat 上连续执行，避免每个效果都在 GPU 和 CPU 间反复拷贝。掩膜外接矩形就是必要的 ROI（局部区域），对于需要 CPU 处理的部分计算，仅复制部分图像，再回写 GPU 原图对应区域，减少整帧传输导致的 PCIe 带宽瓶颈。”</em></del></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
 </tbody></table>
 </li>
 </ol>
+<p><del><em>“我的优化思路分为<strong>计算</strong>和<strong>数据传输</strong>两部分，让 GPU 和 CPU 混合处理。计算方面，暗区、反光区掩膜的生成需要对大量像素重复进行计算和判断，可以用 SIMD 指令在 CPU 上进行并行计算，批量生成掩膜，再由 GPU 执行原图与增强图的逐像素混合。数据传输方面，利用 CUDA 尽可能让图像处理按顺序在 GpuMat 上连续执行，避免每个效果都在 GPU 和 CPU 间反复拷贝。掩膜外接矩形就是必要的 ROI（局部区域），对于需要 CPU 处理的部分计算，仅复制部分图像，再回写 GPU 原图对应区域，减少整帧传输导致的 PCIe 带宽瓶颈。”</em></del></p>
 <p><em>“整体的数据传输链路上，原本优化思路，最初设计是优化计算和数据传输两部分，也就是让 GPU 和 CPU 混合处理。在计算上，对于需要大量的复杂 CPU 计算，可以通过 SIMD 指令在 CPU 上进行批量并行计算，然后再由 GPU 执行这个原图的各种特效处理，利用这个 CUDA 让图像尽可能地按顺序在 GpuMat 上连续执行，避免这些处理在 GPU 和 CPU 间反复拷贝。然后还有另外要 CPU 处理的部分计算，可以使用 ROI（局部区域）仅复制部分图像，再回写 GPU 原图对应区域，减少整帧传输导致的 PCIe 带宽瓶颈。其中还准备用 D3D11 的乒乓双缓冲来回输入输出两张纹理进行合成。但后期发现没有这么复杂的需求，就改成了优先采用 CUDA，在显存中连续完成图像处理，并通过互操作将结果交给 D3D11 合成显示；在不支持 CUDA 时，回退 CPU 进行图像处理。CPU 路径对掩膜生成等重复像素计算采用 SIMD 并行优化，并根据掩膜确定 ROI，减少处理范围。并由 D3D11 统一完成原图融合、病灶标注和显示。因为如果用 shader 需要自己编写很多复杂的处理，而 CUDA 可以直接调用 OpenCV 库很多现成的函数。”</em></p>
 <p><strong>互操作</strong>的解决方案：消除数据复制<br>图形互操作的核心机制是：CUDA 能够将纹理直接<strong>映射</strong>到其地址空间，从而实现：</p>
 <ul>
@@ -2925,7 +2920,7 @@
 </tr>
 <tr>
 <td>2. 配置会话</td>
-<td><code>MediaCaptureInitializationSettings</code></td>
+<td><code>MediaCapture</code> <code>InitializationSettings</code></td>
 <td>设置 VideoDeviceId、SharingMode、MemoryPreference 等</td>
 </tr>
 <tr>
