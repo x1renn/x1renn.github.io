@@ -1,0 +1,592 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>内窥镜影像采集与病灶辅助分析工作站 | 逸人の博客</title><meta name="author" content="逸人,x1ren@qq.com"><meta name="copyright" content="逸人"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#FFF5E1"><meta name="description" content="内窥镜影像采集与病灶辅助分析工作站图像针对息肉（突起）、炎症&#x2F;糜烂（红色）处理。 内镜图像增强开发降噪、亮度调整、对比度拉伸和色彩校正处理，使用双边滤波抑制图像噪声并保留黏膜边缘；通过 LUT 完成像素映射，并结合组织区域掩膜排除暗区、反光区和无效边缘。 输入是 1920×1080、8 位 NV12、BT.709 有限范围。先按 709 矩阵把 Y&#x3D;16～235、UV&amp;#x3D">
+<meta property="og:type" content="article">
+<meta property="og:title" content="内窥镜影像采集与病灶辅助分析工作站">
+<meta property="og:url" content="https://blog.x1ren.xyz/2026/10/13/C++/projects/project2/index.html">
+<meta property="og:site_name" content="逸人の博客">
+<meta property="og:description" content="内窥镜影像采集与病灶辅助分析工作站图像针对息肉（突起）、炎症&#x2F;糜烂（红色）处理。 内镜图像增强开发降噪、亮度调整、对比度拉伸和色彩校正处理，使用双边滤波抑制图像噪声并保留黏膜边缘；通过 LUT 完成像素映射，并结合组织区域掩膜排除暗区、反光区和无效边缘。 输入是 1920×1080、8 位 NV12、BT.709 有限范围。先按 709 矩阵把 Y&#x3D;16～235、UV&amp;#x3D">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png">
+<meta property="article:published_time" content="2026-10-12T21:23:04.000Z">
+<meta property="article:modified_time" content="2026-10-13T21:25:02.430Z">
+<meta property="article:author" content="逸人">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "内窥镜影像采集与病灶辅助分析工作站",
+  "url": "https://blog.x1ren.xyz/2026/10/13/C++/projects/project2/",
+  "image": "https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png",
+  "datePublished": "2026-10-12T21:23:04.000Z",
+  "dateModified": "2026-10-13T21:25:02.430Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "逸人",
+      "url": "https://blog.x1ren.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.x1ren.xyz/2026/10/13/C++/projects/project2/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.4.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2A2A2A')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFF5E1')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":true,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 逸人","link":"链接: ","source":"来源: 逸人の博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '内窥镜影像采集与病灶辅助分析工作站',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/words.css"><link rel="stylesheet" href="/css/transparency.css"><link rel="stylesheet" href="/css/admonition.css"><link rel="stylesheet" href="/css/table.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" id="hexo-admonition-icon-injected">
+  </head><body><div id="web_bg" style="background-image: url(/img/wb-bg.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">逸人の博客</span></a><a class="nav-page-title" href="/"><span class="site-name">内窥镜影像采集与病灶辅助分析工作站</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">内窥镜影像采集与病灶辅助分析工作站</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-12T21:23:04.000Z" title="发表于 2026-10-13 05:23:04">2026-10-13</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-13T21:25:02.430Z" title="更新于 2026-10-14 05:25:02">2026-10-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">6k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>19分钟</span></span><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="twikoo_visitors"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="内窥镜影像采集与病灶辅助分析工作站"><a href="#内窥镜影像采集与病灶辅助分析工作站" class="headerlink" title="内窥镜影像采集与病灶辅助分析工作站"></a>内窥镜影像采集与病灶辅助分析工作站</h2><p>图像针对息肉（突起）、炎症&#x2F;糜烂（红色）处理。</p>
+<h3 id="内镜图像增强"><a href="#内镜图像增强" class="headerlink" title="内镜图像增强"></a>内镜图像增强</h3><p>开发<strong>降噪、亮度调整</strong>、<strong>对比度拉伸</strong>和<strong>色彩校正处理</strong>，使用<strong>双边滤波抑制图像噪声</strong>并保留黏膜边缘；通过 LUT 完成像素映射，并结合组织区域掩膜排除暗区、反光区和无效边缘。</p>
+<p>输入是 <strong>1920×1080、8 位 NV12、BT.709 有限范围</strong>。先按 709 矩阵把 Y&#x3D;16～235、UV&#x3D;16～240 转成 RGB8 的 0～255 数值，再依次执行：<strong>原图生成掩膜 → 双边滤波 → 三维 LUT 色彩校正 → 颜色转换（RGB → YCrCb&#x2F;YUV） → 一维 LUT 亮度（Y1）调整 → CLAHE 对比度增强(Y2) → 恢复 RGB → 掩膜融合</strong>。</p>
+<p>掩膜从未经增强的原图生成，避免先提亮后把暗区误判成有效区。双边滤波先抑制细小波动，随后亮度、对比度变换不会先把噪声放大。色彩校正采用三维 LUT 色彩校正，放在亮度调整之前。后两项选择性启用，先亮度后 CLAHE。</p>
+<p>降噪基线采用原分辨率、邻域直径 5、sigmaColor&#x3D;20、sigmaSpace&#x3D;2，不沿用旧美颜模块的宽高各缩小到四分之一。它优先减少细节损失；处理成本由有效视野 ROI 和 SIMD&#x2F;GPU 实现控制，不靠大幅降采样换速度。例如暗处原来有 2 个灰度级的噪声，先乘以 3 倍对比度后就变成 6 个灰度级，会更显眼。反过来先抑制小波动，再适度拉开对比度，更容易控制观感。但不能为了“干净”抹掉细小纹理；需要同时保留未增强画面供对照。</p>
+<ol>
+<li><strong>双边滤波</strong>降噪：距离近 + 颜色相近的像素权重大；距离远或颜色差异大的像素权重小。抑制了边缘模糊，保留边界。</li>
+<li>亮度调整：一维 LUT，以原亮度 Y（0～255）为索引，查出目标亮度。提前计算映射曲线，避免逐像素重复计算。<br><strong>LUT</strong> 以空间换时间，用一个数组存储预计算结果，直接根据颜色去索引映射至目标值。<br>创建了 <code>1×256</code> 的 <code>CV_8UC1</code> 表<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/604897964">https://zhuanlan.zhihu.com/p/604897964</a><br><a target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&lang=zh-CN">https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&amp;lang=zh-CN</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_51133195/article/details/154124578">https://blog.csdn.net/m0_51133195/article/details/154124578</a></li>
+<li>对比度拉伸：<strong>CLAHE</strong> 局部直方图均衡化，以增强局部明暗差异，并抑制噪声放大<br>① 图像分块（Tiles）：将图像划分为 M×N 个小块（OpenCV 默认 8×8），每个块独立进行直方图均衡化。<br>② 对比度限制：对每个小块的直方图设置截断阈值（即 ClipLimit），当某一灰度级的像素数量超出该阈值时，超出部分的像素会被均匀分配到其他灰度级中。限制了最大对比度增益，抑制噪声放大与过曝。<br>③ 双线性插值为：避免块拼接产生伪影，对相邻块的结果进行双线性插值，使过渡平滑。</li>
+<li>色彩校正：三维 LUT<br>整体调色滤镜，用于修正成像链路偏色，3维 LUT，用 512×512 图片保存一个 64×64×64 个颜色采样点：64 个蓝色切片按 8×8 平铺，每个切片内部是红绿坐标，通过查表和插值得到输出颜色。</li>
+<li>掩膜：<code>显示结果 = 原图×(1-M) + 增强图×M</code>；暗区、反光区，即无效边缘。<table>
+<thead>
+<tr>
+<th>区域</th>
+<th>到底是什么</th>
+<th>简单做法</th>
+<th>为什么排除</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>暗区</td>
+<td>画面里照明不足、非常暗的部分</td>
+<td>计算亮度，低于阈值就标记；例如 Y&lt;20</td>
+<td>强行提亮容易把噪声一起放大</td>
+</tr>
+<tr>
+<td>反光区</td>
+<td>灯光照在湿润表面，形成的强亮斑</td>
+<td>找“非常亮、接近白色”的像素：RGB 三通道都很高</td>
+<td>已经饱和的亮斑没有细节可恢复，继续增强只会更刺眼</td>
+</tr>
+</tbody></table>
+</li>
+</ol>
+<p><del><em>“我的优化思路分为<strong>计算</strong>和<strong>数据传输</strong>两部分，让 GPU 和 CPU 混合处理。计算方面，暗区、反光区掩膜的生成需要对大量像素重复进行计算和判断，可以用 SIMD 指令在 CPU 上进行并行计算，批量生成掩膜，再由 GPU 执行原图与增强图的逐像素混合。数据传输方面，利用 CUDA 尽可能让图像处理按顺序在 GpuMat 上连续执行，避免每个效果都在 GPU 和 CPU 间反复拷贝。掩膜外接矩形就是必要的 ROI（局部区域），对于需要 CPU 处理的部分计算，仅复制部分图像，再回写 GPU 原图对应区域，减少整帧传输导致的 PCIe 带宽瓶颈。”</em></del></p>
+<p><em>“整体的数据传输链路上，原本优化思路，最初设计是优化计算和数据传输两部分，也就是让 GPU 和 CPU 混合处理。在计算上，对于需要大量的复杂 CPU 计算，可以通过 SIMD 指令在 CPU 上进行批量并行计算，然后再由 GPU 执行这个原图的各种特效处理，利用这个 CUDA 让图像尽可能地按顺序在 GpuMat 上连续执行，避免这些处理在 GPU 和 CPU 间反复拷贝。然后还有另外要 CPU 处理的部分计算，可以使用 ROI（局部区域）仅复制部分图像，再回写 GPU 原图对应区域，减少整帧传输导致的 PCIe 带宽瓶颈。其中还准备用 D3D11 的乒乓双缓冲来回输入输出两张纹理进行合成。但后期发现没有这么复杂的需求，就改成了优先采用 CUDA，在显存中连续完成图像处理，并通过互操作将结果交给 D3D11 合成显示；在不支持 CUDA 时，回退 CPU 进行图像处理。CPU 路径对掩膜生成等重复像素计算采用 SIMD 并行优化，并根据掩膜确定 ROI，减少处理范围。并由 D3D11 统一完成原图融合、病灶标注和显示。因为如果用 shader 需要自己编写很多复杂的处理，而 CUDA 可以直接调用 OpenCV 库很多现成的函数。”</em></p>
+<p><strong>互操作</strong>的解决方案：消除数据复制<br>图形互操作的核心机制是：CUDA 能够将纹理直接<strong>映射</strong>到其地址空间，从而实现：</p>
+<ul>
+<li>零拷贝（Zero-Copy）： 数据在 GPU 显存中原地不动。</li>
+<li>高速访问： CUDA Kernel 可以直接读取和写入这些图形资源，无需经过 PCIe 总线或主机内存。<br>解决了原本频繁的 CPU&#x2F;GPU 内存 复制（通过慢速的 PCIe 总线）造成的巨大性能瓶颈。</li>
+</ul>
+<p>粒子模拟、光线追踪、漫反射之类的复杂计算一般应该也可以用 CUDA 互操作来高效计算吧。<br><em>“在光线遍历阶段，尽管相交测试主要由 RTCore 处理，但次级光线的生成、着色计算以及尤其是包含复杂材质交互（如次表面散射光谱渲染）的光路计算，仍需回归到 CUDA 的通用计算单元进行处理。这种“RTCore 负责几何求交，CUDA 负责着色与逻辑”的分工模式，已成为 UnrealEngine5 的 Lumen 全局光照系统与 Unity HDRP 的光线追踪模块的标准架构”</em><br><a href="%5Bhttps://%5D(https://enterscholar.com/uploads/short-url/mNF9IzAuWAlOm7YpbbdIKFHJy64.pdf#:~:text=%E6%91%98%E8%A6%81:%E9%9A%8F%20%E7%9D%80%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93%E4%B8%8E%E4%BA%A4%E4%BA%92%E5%BA%94%E7%94%A8%E5%AF%B9%E8%AE%A1%E7%AE%97%E9%9C%80%E6%B1%82%E7%9A%84%E6%97%A5%E7%9B%8A%E5%A2%9E%E9%95%BF,%E9%80%9A%20%E7%94%A8%E5%9B%BE%E5%BD%A2%E5%A4%84%E7%90%86%E5%99%A8(GPGPU)%E5%B9%B6%E8%A1%8C%E8%AE%A1%E7%AE%97%E5%B7%B2%E6%88%90%E4%B8%BA%E7%8E%B0%E4%BB%A3%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%AE%9E%E7%8E%B0%E9%AB%98%E7%9C%9F%E5%AE%9E%E6%84%9F%E5%9B%BE%E5%BD%A2%E4%B8%8E%E5%A4%8D%E6%9D%82%E7%89%A9%E7%90%86%E4%BB%BF%E7%9C%9F%E7%9A%84%E5%85%B3%E9%94%AE%E6%8A%80%E6%9C%AF%E3%80%82%20%E6%9C%AC%E6%96%87%E8%81%9A%E7%84%A6%E4%BA%8ENVIDIA%20CUDA(Compute,Unified%20Device%20Architecture)%E5%9C%A8%20%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84%E9%9B%86%E6%88%90%E6%9E%B6%E6%9E%84%E4%B8%8E%E5%BA%94%E7%94%A8%E8%8C%83%E5%BC%8F,%E7%B3%BB%20%E7%BB%9F%E6%80%A7%E5%9C%B0%E7%BB%BC%E8%BF%B0%E4%BA%86%E5%85%B6%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E5%8E%9F%E7%90%86%E3%80%81%E4%B8%BB%E6%B5%81%E5%BC%95%E6%93%8E%E4%B8%AD%E7%9A%84%E5%AE%9E%E7%8E%B0%E6%A8%A1%E5%9E%8B%E3%80%81%20%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96%E7%AD%96%E7%95%A5%E5%8F%8A%E8%B7%A8%E5%B9%B3%E5%8F%B0%E5%85%BC%E5%AE%B9%E6%96%B9%E6%A1%88%E3%80%82)">GPU 并行计算在游戏引擎中的集成与应用：基于 CUDA 架构的系统性综述</a></p>
+<h3 id="病灶模型接入"><a href="#病灶模型接入" class="headerlink" title="病灶模型接入"></a>病灶模型接入</h3><p>基于 <strong>ONNX Runtime</strong> 接入息肉与异常黏膜检测模型，完成<strong>输入缩放、颜色转换、归一化、推理及结果解析</strong>；根据画面变化控制模型执行时机，并对<strong>连续帧检测框的位置和置信度进行平滑</strong>。</p>
+<p>固定输入为：未增强1080P RGB 原图 → 双线性等比例缩放 → 居中填充到 640×640，背景填充灰色 RGB&#x3D;(114,114,114) → Float32 除以 255（归一化） → NCHW [1,3,640,640]（批次、通道、高、宽）</p>
+<h4 id="拉伸与留边：检测框怎么回到原图"><a href="#拉伸与留边：检测框怎么回到原图" class="headerlink" title="拉伸与留边：检测框怎么回到原图"></a>拉伸与留边：检测框怎么回到原图</h4><ul>
+<li><p>拉伸：改变图片比例填充正方形，x、y 分别直接按比例还原。</p>
+</li>
+<li><p><strong>留边</strong>：英文是 letterbox，看电影时，上下出现黑边，就是类似的思路。还原时先平移（向上-y轴）再乘比例。<br> 对同一张 1920×1080 图像：<br> ① 宽和高都缩小为原来的 1&#x2F;3：1920×1080 → 640×360<br> 这时图像没有被拉变形，但高度只有 360，距离模型要求的 640 还差：640−360&#x3D;280</p>
+<p> ② 把这 280 平分到上下：上下各补 140。</p>
+</li>
+</ul>
+<h4 id="输出解析"><a href="#输出解析" class="headerlink" title="输出解析"></a>输出解析</h4><p>输出固定为 <strong>Float32</strong> <code>[1,N,6]</code>，每一行依次是 <code>x1,y1,x2,y2,score,classId</code>。坐标是 640×640 输入上的像素边界，score 已为 0～1 分数，classId 以整数值放在浮点 Tensor 中：0&#x3D;息肉候选，1&#x3D;异常黏膜候选。模型图不包含 NMS，客户端先去除非有限数、非法类别和无面积框，保留 score≥0.30，再做类别内 IoU&#x3D;0.50 的 NMS，最后逆 letterbox 回原图。</p>
+<p><strong>NMS</strong> 是在<strong>同一帧</strong>中去掉高度重叠的重复检测框；<strong>跟踪</strong>是把<strong>不同帧</strong>的结果关联成同一个目标，两者不同。本项目明确做类别内 NMS：息肉候选之间相互抑制，异常黏膜候选之间相互抑制，不跨类别删除。</p>
+<ol>
+<li><p><strong>ONNX Runtime</strong>：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 初始化阶段：会话持续存在，不应每一帧重新加载模型</span></span><br><span class="line"><span class="function">Ort::Env <span class="title">env</span><span class="params">(ORT_LOGGING_LEVEL_WARNING, <span class="string">&quot;lesion-demo&quot;</span>)</span></span>;</span><br><span class="line">Ort::SessionOptions options;</span><br><span class="line"><span class="function">Ort::Session <span class="title">session</span><span class="params">(env, modelPath.c_str(), options)</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 初始化阶段：CPU 输入缓冲预分配；这里不自动启用 GPU 推理</span></span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> H = <span class="number">640</span>;</span><br><span class="line"><span class="keyword">constexpr</span> <span class="type">int</span> W = <span class="number">640</span>;</span><br><span class="line"><span class="function">std::vector&lt;<span class="type">float</span>&gt; <span class="title">input</span><span class="params">(<span class="number">3</span> * H * W)</span></span>;</span><br><span class="line">std::array&lt;<span class="type">int64_t</span>, 4&gt; shape&#123;<span class="number">1</span>, <span class="number">3</span>, H, W&#125;;</span><br><span class="line"><span class="keyword">auto</span> memoryInfo = Ort::MemoryInfo::<span class="built_in">CreateCpu</span>(OrtArenaAllocator, OrtMemTypeDefault);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 保留名称持有者，确保调用期间 name 指针不会悬空</span></span><br><span class="line">Ort::AllocatorWithDefaultOptions allocator;</span><br><span class="line"><span class="keyword">auto</span> inputName = session.<span class="built_in">GetInputNameAllocated</span>(<span class="number">0</span>, allocator);</span><br><span class="line"><span class="keyword">auto</span> outputName = session.<span class="built_in">GetOutputNameAllocated</span>(<span class="number">0</span>, allocator);</span><br><span class="line"><span class="type">const</span> <span class="type">char</span>* inputNames[] = &#123;inputName.<span class="built_in">get</span>()&#125;;</span><br><span class="line"><span class="type">const</span> <span class="type">char</span>* outputNames[] = &#123;outputName.<span class="built_in">get</span>()&#125;;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 每帧填充：从交错 RGB 转为 NCHW，逐行取指针以尊重 Mat 的行跨度</span></span><br><span class="line"><span class="keyword">for</span> (<span class="type">int</span> y = <span class="number">0</span>; y &lt; H; ++y) &#123;</span><br><span class="line">   <span class="type">const</span> <span class="keyword">auto</span>* row = rgb<span class="number">640.</span><span class="built_in">ptr</span>&lt;cv::Vec3b&gt;(y);</span><br><span class="line">   <span class="keyword">for</span> (<span class="type">int</span> x = <span class="number">0</span>; x &lt; W; ++x) &#123;</span><br><span class="line">      <span class="keyword">for</span> (<span class="type">int</span> c = <span class="number">0</span>; c &lt; <span class="number">3</span>; ++c) &#123;</span><br><span class="line">            input[c * H * W + y * W + x] = row[x][c] / <span class="number">255.0f</span>;</span><br><span class="line">      &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Tensor 包装已有内存；input 必须存活且本次推理期间不能被另一个任务改写</span></span><br><span class="line"><span class="keyword">auto</span> tensor = Ort::Value::<span class="built_in">CreateTensor</span>&lt;<span class="type">float</span>&gt;(</span><br><span class="line">   memoryInfo, input.<span class="built_in">data</span>(), input.<span class="built_in">size</span>(), shape.<span class="built_in">data</span>(), shape.<span class="built_in">size</span>());</span><br><span class="line"></span><br><span class="line"><span class="comment">// 同步调用：结果归本次任务所有，之后按已校验的输出协议解析</span></span><br><span class="line"><span class="keyword">auto</span> outputs = session.<span class="built_in">Run</span>(Ort::RunOptions&#123;<span class="literal">nullptr</span>&#125;,</span><br><span class="line">   inputNames, &amp;tensor, <span class="number">1</span>, outputNames, <span class="number">1</span>);</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="病灶跟踪与标注"><a href="#病灶跟踪与标注" class="headerlink" title="病灶跟踪与标注"></a>病灶跟踪与标注</h3><p>根据<strong>检测框重叠关系、中心点距离和运动方向关联连续帧病灶</strong>，为同一目标维护跟踪标识；将病灶框、类别、置信度和检查时间绘制为独立图层，并保留原始无标注图像。</p>
+<p>把 IoU、距离、方向得分乘权重再相加，计算把框认作同一个目标的“代价”，得分越低越好（成本）。</p>
+<ol>
+<li>怎么判断两个框是不是同一个目标？<table>
+<thead>
+<tr>
+<th>判断依据</th>
+<th>通俗理解</th>
+<th>为什么有用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>框的重叠程度</strong></td>
+<td>新框与旧框是不是大部分压在一起？</td>
+<td>两帧间移动不大时，同一个目标的框通常重叠很多</td>
+</tr>
+<tr>
+<td><strong>中心点距离</strong></td>
+<td>两个框的中心离得近不近？</td>
+<td>移动稍大、不再重叠时，也能继续比较</td>
+</tr>
+<tr>
+<td><strong>运动方向</strong></td>
+<td>它原来往右走，新框是不是也往右了？</td>
+<td>有多个相邻目标时，辅助区分</td>
+</tr>
+</tbody></table>
+</li>
+<li><strong>IoU</strong>：重叠程度，<code>IoU = 交集面积 ÷ 并集面积</code></li>
+<li>预测：假设同一个目标的中心位置连续变化，第一次：x&#x3D;100，过了 0.1 秒：x&#x3D;110，程序估计它每秒向右移动 100 像素。那么再过 0.1 秒，先猜：<code>下一次 x ≈ 120</code>。新检测回来后，再看它是否在预测位置附近。<br><code>预测中心=上次中心+速度×经过时间</code>，</li>
+<li>多目标匹配<table>
+<thead>
+<tr>
+<th>匹配代价，越小越好</th>
+<th align="right">A</th>
+<th align="right">B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>T1</td>
+<td align="right">0.1</td>
+<td align="right">0.4</td>
+</tr>
+<tr>
+<td>T2</td>
+<td align="right">0.2</td>
+<td align="right">0.9</td>
+</tr>
+</tbody></table>
+如果 T1 先挑，选了最便宜的 A，T2 就只剩 B：总成本 &#x3D; <code>0.1 + 0.9 = 1.0</code>，独立贪心。<br>如果整体考虑，让 T1 选 B、T2 选 A：总成本 &#x3D; <code>0.4 + 0.2 = 0.6</code><br>第二种搭配整体更合理（匈牙利算法）。</li>
+<li>轨迹保留生命周期：目标短暂消失时，不能马上删除，会导致同一目标 ID 不断变化，不利于连续记录。<br>轨迹状态固定为：新候选 → 连续两次检测命中后确认 → 未匹配时进入丢失状态 → 距最后匹配超过 500 ms 删除。候选时用虚线提示。<br>采用两种期限进行平滑：<table>
+<thead>
+<tr>
+<th>时间规则</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>200 ms 显示期限</strong></td>
+<td>距最近真实检测太久，就隐藏框，避免一直画旧框</td>
+</tr>
+<tr>
+<td><strong>500 ms 内部保留期限</strong></td>
+<td>暂时保留轨迹记录，目标重新出现后仍有机会接回旧 ID</td>
+</tr>
+</tbody></table>
+</li>
+<li>平滑：位置和置信度平滑。<br>平滑检测框抖动，<code>新显示值=(1-α)×旧显示值+α×新观测值</code>，α&#x3D;0.3时，新显示位置 &#x3D; 旧显示位置×0.7 + 新位置×0.3<br>根据运动速度动态调整检测间隔，目标快速移动时要减少平滑，让框更快追上；目标静止时再加强平滑。<br>例如静止时 τ&#x3D;80 ms，中心位移超过上次框对角线的 10% 时 τ&#x3D;20 ms，加快追随；换轨迹或场景切换直接重置。<br>显示置信度用 τ&#x3D;200 ms 单独平滑，原始分数另存，检测阈值仍作用于原始分数。</li>
+</ol>
+<h3 id="影像采集与渲染"><a href="#影像采集与渲染" class="headerlink" title="影像采集与渲染"></a>影像采集与渲染</h3><p>通过采集卡接入内镜主机视频信号，处理<strong>设备占用、采集格式变化和信号中断</strong>；基于 <strong>D3D11 完成离屏渲染</strong>与颜色转换，将原始画面、增强结果和病灶标注按图层顺序合成显示。</p>
+<p>驱动将采集卡注册为 Windows 视频采集设备可以使用 WinRT <code>MediaCapture</code> 通过 <code>SharingMode</code> 选择共享只读或独占控制，检查初始化、启动结果。</p>
+<ol>
+<li>设备占用：<em>“原本的已经在用的预览软件已经打开采集卡，工作站需要同时读取画面，因此优先尝试共享只读，获取设备当前输出，不修改源配置；共享初始化失败后，先清理本次资源，再尝试独占控制。而如果需要调整设备的分辨率、帧率或源格式，则直接申请独占控制。因为两个软件会竞争采集设备的控制权限，需要设置独占控制和共享只读两种模式的降级兼容策略。”</em><br><em>“然后启动失败时，程序仍可能已经创建部分资源，像注册回调之类的，会导致与下次尝试的冲突，需要先取消订阅和释放引用(帧对象)什么的”。</em><table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>对应 API</th>
+<th>做什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. 找设备</td>
+<td><code>DeviceInformation::FindAllAsync</code></td>
+<td>枚举设备名称和 ID；现有 getCameras 使用这条路径</td>
+</tr>
+<tr>
+<td>2. 配置会话</td>
+<td><code>MediaCapture</code> <code>InitializationSettings</code></td>
+<td>设置 VideoDeviceId、SharingMode、MemoryPreference 等</td>
+</tr>
+<tr>
+<td>3. 打开会话</td>
+<td><code>InitializeAsync</code></td>
+<td>按配置尝试连接设备，失败时处理异常</td>
+</tr>
+<tr>
+<td>4. 选择视频源</td>
+<td><code>FrameSources</code></td>
+<td>找到彩色视频源；需要改源格式时必须先有控制权限</td>
+</tr>
+<tr>
+<td>5. 创建读取器</td>
+<td><code>CreateFrameReaderAsync</code></td>
+<td>为选中的源建立读取入口</td>
+</tr>
+<tr>
+<td>6. 订阅通知</td>
+<td><code>FrameArrived</code></td>
+<td>注册新帧到达回调，并保存订阅 token</td>
+</tr>
+<tr>
+<td>7. 启动读取</td>
+<td><code>StartAsync</code></td>
+<td>检查返回状态是否为 Success</td>
+</tr>
+<tr>
+<td>8. 持续取帧</td>
+<td><code>TryAcquireLatestFrame</code></td>
+<td>在通知回调中尝试取得最新帧，空结果直接返回</td>
+</tr>
+</tbody></table>
+微软官方 WinRTFrameReader 标准流程:<br>① 寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>② 配置与初始化（Initialize Settings）：向系统提交一份“需求清单”，决定接下来是用 CPU 还是 GPU 处理数据，是独占硬件还是与其他软件共享。<br>③ 定位数据源（Find Source）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④ 建立阅读器（Create Reader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤ 订阅事件（Subscribe Event)：挂载一个 FrameArrived 回调函数，告诉系统有新画面时通知程序。<br>⑥ 开机拉流（Start)：正式命令摄像头开始录像。<br>⑦ 拆解快递（Frame Arrived Callback)：获取最新帧，进行格式转换，并提取为 C++ 能读写的裸内存。<br>⑧ 关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</li>
+<li>采集格式变化：应用收到的分辨率、像素格式或帧率改变，需要更新对应缓冲、纹理、颜色转换及坐标映射。<br><em>“先关闭帧分发入口，协调在途采集回调结束。清理未执行的预览和推理任务，等待正在使用旧缓冲的任务完成；录制端按顺序处理完旧帧，渲染端确认 GPU 不再使用旧资源。随后更新缓冲、纹理和编码配置，全部就绪后再恢复新格式帧分发，避免新旧格式数据混用或提前复用缓冲。”</em></li>
+<li>信号中断：设备暂时无法提供有效的内镜画面，例如 HDMI 断开或主机切换输出。程序需要提示无信号、隐藏旧标注并记录中断时间。</li>
+<li>离屏渲染：先把结果写进自己的纹理，不直接写窗口后台缓冲。这样截图、示教和预览可复用同一结果，输出尺寸不随窗口改变。<br>多消费者情况可以保留原始结果和多种效果的叠加合成处理，配合 D3D11 的乒乓双缓冲，可以连续处理保留多个纹理。</li>
+</ol>
+<h3 id="检查录制与语音备注"><a href="#检查录制与语音备注" class="headerlink" title="检查录制与语音备注"></a>检查录制与语音备注</h3><p>基于 <strong>FFmpeg</strong> 完成检查视频编码、封装和文件分段，按照检查编号关联视频、关键图像及时间戳；通过 <strong>WASAPI</strong> 采集医生语音备注，处理采样格式转换和静音数据，并写入对应检查记录。</p>
+<p>检查开始后建立检查编号，用 FFmpeg 将视频编码为 H.264，将医生语音编码为 AAC(48 kHz、单声道、Float32)，封装为 MP4；目标每 5 分钟切一段，在 IDR 边界分段。关键图像保存 PNG。MP4、PNG 和时间索引通过 HTTPS 文件接口提交院内归档服务，用检查编号关联。编码解决数据压缩，封装保存轨道和时间戳，归档解决文件归属、完整性及检索。WASAPI 采集的音频统一为32位浮点格式处理，便于乘音量、混合和重采样，静音保留原有时长，音视频使用共同的录制时间起点进行同步。</p>
+<h4 id="怎么知道编码器输出的是关键帧？AV-PKT-FLAG-KEY"><a href="#怎么知道编码器输出的是关键帧？AV-PKT-FLAG-KEY" class="headerlink" title="怎么知道编码器输出的是关键帧？AV_PKT_FLAG_KEY"></a>怎么知道编码器输出的是关键帧？<code>AV_PKT_FLAG_KEY</code></h4><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 源码逻辑：读取编码器返回的包标志，判断是否被标为关键帧</span></span><br><span class="line"><span class="type">bool</span> isKeyFrame = (pkt-&gt;flags &amp; AV_PKT_FLAG_KEY) != <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 源码逻辑：检查是否到达分段条件</span></span><br><span class="line"><span class="built_in">checkFileSplit</span>(isKeyFrame, pkt-&gt;pts);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 然后把这个包交给发送/写文件线程</span></span><br><span class="line"><span class="built_in">emitPacket</span>(pkt, <span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>静音包，实现按原包长填 0，保持时长连续，不删除以防止和视频错位。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 输出统一为 Float32：音频帧数 × 声道数 × 每样本字节数</span></span><br><span class="line"><span class="type">int</span> bytesNeeded =</span><br><span class="line">   numFramesAvailable * m_mixFormat-&gt;nChannels * <span class="built_in">sizeof</span>(<span class="type">float</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 分配本包输出空间；resize 本身不代表已经填零</span></span><br><span class="line">QByteArray floatData;</span><br><span class="line">floatData.<span class="built_in">resize</span>(bytesNeeded);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 获取输出地址，并检查 WASAPI 是否把本包标记为静音</span></span><br><span class="line"><span class="type">float</span>* outPtr = <span class="built_in">reinterpret_cast</span>&lt;<span class="type">float</span>*&gt;(floatData.<span class="built_in">data</span>());</span><br><span class="line"><span class="type">bool</span> isSilent = (flags &amp; AUDCLNT_BUFFERFLAGS_SILENT) != <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 源码 Float32 分支中的静音处理：将整个输出包填为零</span></span><br><span class="line"><span class="keyword">if</span> (isSilent) &#123;</span><br><span class="line">   <span class="comment">// 第一个参数是起始地址，第二个是填充值，第三个是填充的字节数</span></span><br><span class="line">   <span class="built_in">memset</span>(outPtr, <span class="number">0</span>, floatData.<span class="built_in">size</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><strong>WASAPI</strong>：音频捕获客户端（Capture Client）<br>① 环境准备（COM Initialization）：初始化底层组件环境。<br>② 发现设备（Device Enumeration）：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（Activate IAudio Client）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate &amp; Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudio Capture Client）：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start）：命令声卡开始录音。<br>⑦ 捕获大循环（The Capture Loop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧ 停止与清理（Stop &amp; Cleanup）：停止流，释放所有资源。</li>
+</ol>
+<h3 id="编码与传输"><a href="#编码与传输" class="headerlink" title="编码与传输"></a>编码与传输</h3><p>封装 <strong>NVENC、AMF 和 H.264</strong> 编码路径，根据工作站显卡环境选择编码方式；整理音视频时间戳后将检查画面发送至院内示教服务，网络异常时保留本地录制并重新建立影像会话。</p>
+<p>NVENC 使用 NVIDIA 专用编码硬件，AMF 是 AMD 媒体框架接口，libx264 用 CPU 编 H.264。</p>
+<h3 id="模型任务交互"><a href="#模型任务交互" class="headerlink" title="模型任务交互"></a>模型任务交互</h3><p>从采集链路旁路提取图像帧，完成<strong>尺寸调整和格式转换</strong>后提交本地或院内推理服务；通过任务编号、检查编号和图像时间戳匹配异步结果，过滤已超过显示时机的标注数据。</p>
+<p>摄像头每 33.3 ms 来一帧，模型一次可能花 100 ms。若采集回调同步等待模型，预览和录制也会被拖住。旁路把有所有权的帧交给分析线程或院内推理服务，采集继续前进。模型返回时当前画面很可能已经变了，因此还需要结果归属与时效检查。</p>
+<h3 id="性能处理"><a href="#性能处理" class="headerlink" title="性能处理"></a>性能处理</h3><p><strong>预先分配模型输入与图像转换缓冲</strong>，根据画面变化和病灶跟踪状态控制检测频率；推理线程只读取最新待分析帧，检测间隔内沿用跟踪结果，完成模型计算与影像预览、检查录制分别执行。</p>
+<p>预先分配缓冲区，重复使用。模型每次需要一块输入内存。假设输入为：640×640、RGB、Float32。这块内存大约需要 4.9 MB。可以在模型初始化时分配一次，每次分析时填写新的像素数据，避免反复申请、释放。<br>图像缩放、颜色转换使用的固定尺寸缓冲区也可以复用。</p>
+<p>但有一个约束：<br>模型还在读取时，不能把下一张画面写进去。采用一个串行推理线程，就在本次推理完成后再填写下一次输入，比较容易管理。</p>
+<p>模型没有执行的那些帧，可以根据已有轨迹估计病灶框的新位置。超过允许时间还没有新检测结果，就停止显示旧框，避免它一直挂在画面上。<br>采集后分成三条处理链路：</p>
+<table>
+<thead>
+<tr>
+<th>链路</th>
+<th>主要目标</th>
+<th>数据策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>预览</td>
+<td>显示及时</td>
+<td>优先显示较新的画面</td>
+</tr>
+<tr>
+<td>推理</td>
+<td>结果接近当前画面</td>
+<td>只保留最新待分析帧</td>
+</tr>
+<tr>
+<td>录制</td>
+<td>保存连续检查过程</td>
+<td>按时间顺序处理，不能跟着推理丢帧</td>
+</tr>
+</tbody></table>
+<p><code>“我预先分配模型输入和图像转换缓冲，串行推理时重复使用。根据画面变化和跟踪状态调整检测频率，推理忙碌期间只保留最新待分析帧，避免结果越来越滞后。预览、推理和录制分别执行：推理可以跳过旧候选，录制按顺序处理；检测间隔内用跟踪结果估计框的位置，并限制旧结果的显示时间。”</code></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz">逸人</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz/2026/10/13/C++/projects/project2/">https://blog.x1ren.xyz/2026/10/13/C++/projects/project2/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.x1ren.xyz" target="_blank">逸人の博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a></div><div class="post-share"><div class="social-share" data-image="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" data-sites="twitter,wechat,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%911/" title="音视频技术栈基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">音视频技术栈基础</div></div><div class="info-2"><div class="info-item-1">分别介绍 SPS / PPS / IDR，以及 NALU</div></div></div></a><a class="pagination-related" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">网络相机图传与多相机集中管理系统</div></div><div class="info-2"><div class="info-item-1">网络相机图传与多相机集中管理系统相机采集端封装工业相机发现、连接、取流及参数读写流程，按设备编号维护采集上下文；处理连续采集、外部触发和软件触发模式，将相机回调输出的图像交由处理线程。  发现是枚举设备；连接是取得设备句柄；取流是启动采集并接收图像；参数读写是通过设备接口读取或修改真实参数。 每台设备一份 CameraContext：设备编号、SDK 句柄、状态、采集模式、实际参数、图像格式、帧号、原图队列和停止状态。以设备序列号建立稳定的 deviceId 映射。设备状态固定为 Closed → Opened → Grabbing → Stopping → Opened，失败进入 Failed。同设备的 SDK 开停与参数命令交给采集控制执行线程串行处理；SDK 图像回调只做数据交接，不与网络线程并发修改句柄。   模式 谁决定出图 例子    连续采集 相机按设置节奏持续出图 调焦时持续看画面   外部触发 外部信号满足触发条件 光电传感器检测到零件   软件触发 软件发触发命令 点击“拍一张”   为什么不能把重活都放在回调里？回调像相机交货的窗口。转换、编码、网络发送耗时...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/04/C++/cpp0/" title="C++ 笔记"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-04</div><div class="info-item-2">C++ 笔记</div></div><div class="info-2"><div class="info-item-1">杂记</div></div></div></a><a class="pagination-related" href="/2025/08/31/C++/cpp11/" title="运算符重载与函数对象"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-31</div><div class="info-item-2">运算符重载与函数对象</div></div><div class="info-2"><div class="info-item-1">函数对象：使用方式看上去像函数，但实际是类的一个对象；是因为类重载了“()”运算符，所以让对象使用的方式看起来是函数，即对象后面的括号像函数一样调用。 12345struct Adder &#123;               // 1. 类重载了 operator()    int operator()(int a, int b) const &#123; return a + b; &#125;&#125;;Adder add;                   // 2. 函数对象int r = add(3, 4);           // 调用函数对象 友元函数不是类的成员函数，但它可以访问类的私有和保护成员，为操作符重载提供了灵活性。 123friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Student&amp; s) &#123;    return os &lt;&lt; &#x27;[&#x27; &lt;&lt; s.id &lt;&lt; &#x27;,&#x27...</div></div></div></a><a class="pagination-related" href="/2025/07/29/C++/cpp1/" title="C++ 性能优化笔记"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-29</div><div class="info-item-2">C++ 性能优化笔记</div></div><div class="info-2"><div class="info-item-1">积累 C++ 性能优化的操作和思路</div></div></div></a><a class="pagination-related" href="/2025/08/17/C++/cpp10/" title="std::move 与 std::forward 以及左右值"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-17</div><div class="info-item-2">std::move 与 std::forward 以及左右值</div></div><div class="info-2"><div class="info-item-1">https://www.bilibili.com/video/BV1ZViMBGECR/?spm_id_from=0.0.search.video_card.click&amp;vd_source=11db1d1a077558e043cecb028334f12a左值引用 &amp; 就是别名 值类别参考  lvalue: 左值，可取地址，如变量名。 prvalue: 纯右值，如 int(42) 临时量。 xvalue: 将亡值， 如表达式 std::move(obj)。  纯右值和将亡值都统称右值（rvalue），可以是不具名的临时变量，可以是即将离开作用域或被 move 的类型。左值和将亡值都属于泛左值。 Attention  值类别（value category）只看“表达式的静态属性”，跟对象本身的状态无关。变量本身没有值类别，只有表达式才有。 12int  x = 42;decltype(auto) b = std::move(x); 当以后写 b 这个标识符时，它所在的表达式是左值（因为具名变量都是左值表达式），但它的声明类型仍然是 int&amp;&amp;。   s...</div></div></div></a><a class="pagination-related" href="/2025/08/06/C++/cpp4/" title="C++ 多线程笔记3"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-06</div><div class="info-item-2">C++ 多线程笔记3</div></div><div class="info-2"><div class="info-item-1">实现简易线程池</div></div></div></a><a class="pagination-related" href="/2025/08/05/C++/cpp3/" title="C++ 多线程笔记2"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-05</div><div class="info-item-2">C++ 多线程笔记2</div></div><div class="info-2"><div class="info-item-1">使用 condition_variable 实现生产者与消费者模型</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">逸人</div><div class="author-info-description">记忆保存库</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/x1renn"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/x1renn" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:x1ren@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/id/979869114/" target="_blank" title="Steam"><i class="fa-brands fa-steam" style="color: #hdhfbb;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽哈喽🍍</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%86%85%E7%AA%A5%E9%95%9C%E5%BD%B1%E5%83%8F%E9%87%87%E9%9B%86%E4%B8%8E%E7%97%85%E7%81%B6%E8%BE%85%E5%8A%A9%E5%88%86%E6%9E%90%E5%B7%A5%E4%BD%9C%E7%AB%99"><span class="toc-number">1.</span> <span class="toc-text">内窥镜影像采集与病灶辅助分析工作站</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%86%85%E9%95%9C%E5%9B%BE%E5%83%8F%E5%A2%9E%E5%BC%BA"><span class="toc-number">1.1.</span> <span class="toc-text">内镜图像增强</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%97%85%E7%81%B6%E6%A8%A1%E5%9E%8B%E6%8E%A5%E5%85%A5"><span class="toc-number">1.2.</span> <span class="toc-text">病灶模型接入</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%8B%89%E4%BC%B8%E4%B8%8E%E7%95%99%E8%BE%B9%EF%BC%9A%E6%A3%80%E6%B5%8B%E6%A1%86%E6%80%8E%E4%B9%88%E5%9B%9E%E5%88%B0%E5%8E%9F%E5%9B%BE"><span class="toc-number">1.2.1.</span> <span class="toc-text">拉伸与留边：检测框怎么回到原图</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%BE%93%E5%87%BA%E8%A7%A3%E6%9E%90"><span class="toc-number">1.2.2.</span> <span class="toc-text">输出解析</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%97%85%E7%81%B6%E8%B7%9F%E8%B8%AA%E4%B8%8E%E6%A0%87%E6%B3%A8"><span class="toc-number">1.3.</span> <span class="toc-text">病灶跟踪与标注</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%BD%B1%E5%83%8F%E9%87%87%E9%9B%86%E4%B8%8E%E6%B8%B2%E6%9F%93"><span class="toc-number">1.4.</span> <span class="toc-text">影像采集与渲染</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A3%80%E6%9F%A5%E5%BD%95%E5%88%B6%E4%B8%8E%E8%AF%AD%E9%9F%B3%E5%A4%87%E6%B3%A8"><span class="toc-number">1.5.</span> <span class="toc-text">检查录制与语音备注</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E6%80%8E%E4%B9%88%E7%9F%A5%E9%81%93%E7%BC%96%E7%A0%81%E5%99%A8%E8%BE%93%E5%87%BA%E7%9A%84%E6%98%AF%E5%85%B3%E9%94%AE%E5%B8%A7%EF%BC%9FAV-PKT-FLAG-KEY"><span class="toc-number">1.5.1.</span> <span class="toc-text">怎么知道编码器输出的是关键帧？AV_PKT_FLAG_KEY</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E4%B8%8E%E4%BC%A0%E8%BE%93"><span class="toc-number">1.6.</span> <span class="toc-text">编码与传输</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A8%A1%E5%9E%8B%E4%BB%BB%E5%8A%A1%E4%BA%A4%E4%BA%92"><span class="toc-number">1.7.</span> <span class="toc-text">模型任务交互</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%A7%E8%83%BD%E5%A4%84%E7%90%86"><span class="toc-number">1.8.</span> <span class="toc-text">性能处理</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E5%8D%8F%E8%AE%AE/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:32:29.859Z" title="更新于 2026-10-14 05:32:29">2026-10-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:31:12.809Z" title="更新于 2026-10-14 05:31:12">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/09/C++/projects/project3/" title="简历项目"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="简历项目"/></a><div class="content"><a class="title" href="/2026/09/09/C++/projects/project3/" title="简历项目">简历项目</a><time datetime="2026-10-13T21:28:45.239Z" title="更新于 2026-10-14 05:28:45">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内窥镜影像采集与病灶辅助分析工作站"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站">内窥镜影像采集与病灶辅助分析工作站</a><time datetime="2026-10-13T21:25:02.430Z" title="更新于 2026-10-14 05:25:02">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="网络相机图传与多相机集中管理系统"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统">网络相机图传与多相机集中管理系统</a><time datetime="2026-10-13T21:24:30.954Z" title="更新于 2026-10-14 05:24:30">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By 逸人</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.4.3"></script><script src="/js/main.js?v=5.4.3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Twikoo' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script>window.newestComments = {
+  changeContent: content => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<code>.*?<\/code>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g, "") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0, 150) + '...'
+    }
+    return content
+  },
+
+  generateHtml: (array, ele) => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class="aside-list-item">'
+
+        if (true && array[i].avatar) {
+          const imgAttr = 'src'
+          const lazyloadNative = ''
+          result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+        }
+
+        result += `<div class="content">
+        <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
+        <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '暂无评论'
+    }
+
+    ele.innerHTML = result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh(ele)
+  },
+
+  newestCommentInit: (name, getComment) => {
+    const $dom = document.querySelector('#card-newest-comments .aside-list')
+    if ($dom) {
+      const data = btf.saveToLocal.get(name)
+      if (data) {
+        newestComments.generateHtml(JSON.parse(data), $dom)
+      } else {
+        getComment($dom)
+      }
+    }
+  },
+
+  run: (name, getComment) => {
+    newestComments.newestCommentInit(name, getComment)
+    btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
+  }
+}</script><script>window.addEventListener('load', () => {
+  const keyName = 'twikoo-newest-comments'
+  const { changeContent, generateHtml, run } = window.newestComments
+
+  const getComment = ele => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://1-zeta-olive.vercel.app/',
+        region: '',
+        pageSize: 4,
+        includeReply: true
+      }).then(res => {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        btf.saveToLocal.set(keyName, JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray, ele)
+      }).catch(err => {
+        console.error(err)
+        ele.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  run(keyName, getComment)
+})</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/click-heart.min.js" async="async" mobile="false"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="https://testingcf.jsdelivr.net/gh/Mr-EEEeee/Mr-EEEeee.github.io/js/search/local-search.js"></script></div></div></body></html>

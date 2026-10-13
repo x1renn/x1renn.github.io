@@ -1,0 +1,827 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>音视频技术栈基础 | 逸人の博客</title><meta name="author" content="逸人,x1ren@qq.com"><meta name="copyright" content="逸人"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#FFF5E1"><meta name="description" content="分别介绍 SPS &#x2F; PPS &#x2F; IDR，以及 NALU">
+<meta property="og:type" content="article">
+<meta property="og:title" content="音视频技术栈基础">
+<meta property="og:url" content="https://blog.x1ren.xyz/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%911/index.html">
+<meta property="og:site_name" content="逸人の博客">
+<meta property="og:description" content="分别介绍 SPS &#x2F; PPS &#x2F; IDR，以及 NALU">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://blog.x1ren.xyz/img/avatar.jpg">
+<meta property="article:published_time" content="2026-10-13T16:35:16.000Z">
+<meta property="article:modified_time" content="2026-10-13T21:00:30.850Z">
+<meta property="article:author" content="逸人">
+<meta property="article:tag" content="音视频">
+<meta property="article:tag" content="H.264">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://blog.x1ren.xyz/img/avatar.jpg"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "音视频技术栈基础",
+  "url": "https://blog.x1ren.xyz/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%911/",
+  "image": "https://blog.x1ren.xyz/img/avatar.jpg",
+  "datePublished": "2026-10-13T16:35:16.000Z",
+  "dateModified": "2026-10-13T21:00:30.850Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "逸人",
+      "url": "https://blog.x1ren.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.x1ren.xyz/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%911/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.4.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2A2A2A')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFF5E1')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":true,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 逸人","link":"链接: ","source":"来源: 逸人の博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '音视频技术栈基础',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/words.css"><link rel="stylesheet" href="/css/transparency.css"><link rel="stylesheet" href="/css/admonition.css"><link rel="stylesheet" href="/css/table.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" id="hexo-admonition-icon-injected">
+  </head><body><div id="web_bg" style="background-image: url(/img/wb-bg.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">逸人の博客</span></a><a class="nav-page-title" href="/"><span class="site-name">音视频技术栈基础</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">音视频技术栈基础</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-10-13T16:35:16.000Z" title="发表于 2026-10-14 00:35:16">2026-10-14</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-13T21:00:30.850Z" title="更新于 2026-10-14 05:00:30">2026-10-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">4.4k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>16分钟</span></span><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="twikoo_visitors"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><table>
+<thead>
+<tr>
+<th>名称</th>
+<th>一句话</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>SPS</strong>(Sequence Parameter Set)</td>
+<td><strong>整个序列的”全局说明书”</strong>:分辨率、profile&#x2F;level、参考帧数量等</td>
+</tr>
+<tr>
+<td><strong>PPS</strong>(Picture Parameter Set)</td>
+<td><strong>单张图像的”编码参数”</strong>:熵编码方式、slice 组、量化参数初值等</td>
+</tr>
+<tr>
+<td><strong>IDR</strong>(Instantaneous Decoder Refresh)</td>
+<td><strong>一种特殊的关键帧</strong>:解码器遇到它就清空参考帧缓存,后面的帧不会再引用它之前的帧,所以可以从这里<strong>随机接入</strong></td>
+</tr>
+</tbody></table>
+<p>三者关系:<strong>没有 SPS&#x2F;PPS,解码器不知道怎么解码;没有 IDR,解码器无法从中间位置开始解码。</strong> 所以直播里起播必须先拿到 SPS + PPS,再等到 IDR。</p>
+<hr>
+<h2 id="NALU-基础"><a href="#NALU-基础" class="headerlink" title="NALU 基础"></a>NALU 基础</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">码流/视频序列</span><br><span class="line">└── 帧 Access Unit(一张画面)</span><br><span class="line">    ├── NALU: AUD / SPS / PPS / SEI     ← 载荷不是 slice</span><br><span class="line">    └── NALU: type 1/5                  ← 载荷是 slice</span><br><span class="line">        └── slice （header + data）</span><br><span class="line">            └── 宏块 macroblock(16×16)</span><br><span class="line">                └── 子块/像素</span><br></pre></td></tr></table></figure>
+
+<h3 id="Access-Unit-访问单元-AU"><a href="#Access-Unit-访问单元-AU" class="headerlink" title="Access Unit(访问单元,AU)"></a>Access Unit(访问单元,AU)</h3><p><strong>一个 AU &#x3D; 解码器还原一张画面时,应一起处理的那一组 NALU。</strong></p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">一张画面</span><br><span class="line">   ↓ 编码</span><br><span class="line">一个 Access Unit</span><br><span class="line">   ↓</span><br><span class="line">里面包含 1 个或多个 NAL Unit</span><br></pre></td></tr></table></figure>
+
+<p>码流就是 AU 一个接一个排下去:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Access Unit 1  → IDR 图像</span><br><span class="line">Access Unit 2  → P 图像</span><br><span class="line">Access Unit 3  → P 图像</span><br><span class="line">Access Unit 4  → P 图像</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p><strong>AU 里有什么</strong>(两类 NALU 混在一起):</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>NALU</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>VCL</strong>(Video Coding Layer)</td>
+<td>type 1(非 IDR slice)、type 5(IDR slice)</td>
+<td>真正装像素数据</td>
+</tr>
+<tr>
+<td><strong>non-VCL</strong></td>
+<td>AUD(9)、SPS(7)、PPS(8)、SEI(6) 等</td>
+<td>参数、分隔符、附加信息</td>
+</tr>
+</tbody></table>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">IDR 对应的 Access Unit</span><br><span class="line">├── NAL：AUD(可选)</span><br><span class="line">├── NAL：SPS</span><br><span class="line">├── NAL：PPS</span><br><span class="line">├── NAL：SEI(可选)</span><br><span class="line">├── NAL：IDR slice</span><br><span class="line">├── NAL：IDR slice      ← 多 slice 时才有</span><br><span class="line">└── ...</span><br><span class="line"></span><br><span class="line">P 帧对应的 Access Unit</span><br><span class="line">├── NAL：AUD(可选)</span><br><span class="line">├── NAL：SEI(可选)</span><br><span class="line">├── NAL：P slice</span><br><span class="line">└── 可能还有 SEI 等</span><br></pre></td></tr></table></figure>
+
+<p>关键点:</p>
+<ul>
+<li>AU 里<strong>必有至少一个 VCL NALU</strong>(主编码图像的 slice),其余都是可选的 non-VCL。</li>
+<li>一个 AU 只含<strong>一张主编码图像</strong>的所有 slice,这就是”一张画面 &#x3D; 一个 AU”。</li>
+<li><strong>FLV&#x2F;RTMP 的一个视频 tag,装的就是一个 AU</strong>。FFmpeg 的一个 <code>AVPacket</code> 通常也对应一个 AU。</li>
+</ul>
+<h3 id="NALU-NAL-Unit"><a href="#NALU-NAL-Unit" class="headerlink" title="NALU(NAL Unit)"></a>NALU(NAL Unit)</h3><p><strong>NALU 是码流的”传输&#x2F;封装单位”:一段带 1 字节头的数据。</strong> NAL 层的设计目的,就是让 H.264 数据能方便地装进各种传输和存储格式(TS、FLV、RTP、MP4)。</p>
+<h4 id="结构"><a href="#结构" class="headerlink" title="结构"></a>结构</h4><figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| NAL header (1 字节) | NAL payload (RBSP) |</span><br></pre></td></tr></table></figure>
+
+<p>头部 1 字节:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| forbidden_zero_bit (1) | nal_ref_idc (2) | nal_unit_type (5) |</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>forbidden_zero_bit</code>:必须为 0,为 1 表示出错。</li>
+<li><code>nal_ref_idc</code>:重要程度,0 表示不被其他帧参考(可丢),非 0 表示会被参考。SPS&#x2F;PPS&#x2F;IDR 通常是 3。</li>
+<li><code>nal_unit_type</code>: <strong>类型</strong> ,决定后面 payload 是什么。<table>
+<thead>
+<tr>
+<th>type</th>
+<th>含义</th>
+<th>类别</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>非 IDR 图像的 slice(P&#x2F;B 帧等)</td>
+<td>VCL</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>IDR</strong> 图像的 slice</td>
+<td>VCL</td>
+</tr>
+<tr>
+<td>6</td>
+<td>SEI(补充增强信息)</td>
+<td>non-VCL</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>SPS</strong></td>
+<td>non-VCL</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>PPS</strong></td>
+<td>non-VCL</td>
+</tr>
+<tr>
+<td>9</td>
+<td>AUD(访问单元分隔符)</td>
+<td>non-VCL</td>
+</tr>
+</tbody></table>
+  常见首字节:<code>0x67</code>&#x3D;SPS,<code>0x68</code>&#x3D;PPS,<code>0x65</code>&#x3D;IDR slice,<code>0x41</code>&#x2F;<code>0x61</code>&#x3D;P slice。</li>
+</ul>
+<h3 id="Slice-条带"><a href="#Slice-条带" class="headerlink" title="Slice(条带)"></a>Slice(条带)</h3><p><strong>Slice 是一张图像内部可独立解码的一块区域,由若干宏块组成,是 VCL NALU 的载荷内容。</strong></p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">一张图像</span><br><span class="line">├── slice 0:宏块 0 ~ 99</span><br><span class="line">├── slice 1:宏块 100 ~ 199</span><br><span class="line">└── slice 2:宏块 200 ~ 299</span><br></pre></td></tr></table></figure>
+
+<p>Slice 的 NALU 内部:</p>
+<figure class="highlight txt"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| NAL header | slice header | slice data(一串宏块) |</span><br></pre></td></tr></table></figure>
+<h4 id="slice-的类型"><a href="#slice-的类型" class="headerlink" title="slice 的类型"></a>slice 的类型</h4><p>slice header 里有 <code>slice_type</code>:</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>I slice</td>
+<td>只用帧内预测</td>
+</tr>
+<tr>
+<td>P slice</td>
+<td>可参考前面的帧</td>
+</tr>
+<tr>
+<td>B slice</td>
+<td>可参考前后的帧</td>
+</tr>
+</tbody></table>
+<p>一帧里的不同 slice 可以类型不同,所以”I 帧”严格说是”所有 slice 都是 I slice 的帧”。<strong>IDR 帧则是所有 slice 的 nal_unit_type 都为 5。</strong></p>
+<h4 id="slice-header-里有什么"><a href="#slice-header-里有什么" class="headerlink" title="slice header 里有什么"></a>slice header 里有什么</h4><p>每个 slice 带自己的头,内容包括:</p>
+<ul>
+<li><code>first_mb_in_slice</code>:这个 slice 从第几个宏块开始(多 slice 时靠它拼回整帧)</li>
+<li><code>slice_type</code></li>
+<li><code>pic_parameter_set_id</code>:<strong>指向 PPS</strong>(这就是前面讲的 slice → PPS → SPS 引用链的起点)</li>
+<li><code>frame_num</code>、POC 相关字段</li>
+<li>量化参数偏移等</li>
+</ul>
+<h4 id="一帧一个-slice-还是多个"><a href="#一帧一个-slice-还是多个" class="headerlink" title="一帧一个 slice,还是多个"></a>一帧一个 slice,还是多个</h4><ul>
+<li><strong>最常见:一帧一个 slice</strong>,一帧对应一个 NALU,x264 默认如此。</li>
+<li><strong>多 slice</strong>:把一帧横向切成几条,每条一个 NALU。</li>
+</ul>
+<h5 id="为什么要分多个-slice"><a href="#为什么要分多个-slice" class="headerlink" title="为什么要分多个 slice"></a>为什么要分多个 slice</h5><ol>
+<li><strong>抗丢包(最主要)</strong>:各 slice 独立解码,丢了一个只损坏图像的一部分,其他区域仍可正常显示。RTP 传输、UDP 场景常用。</li>
+<li><strong>适配 MTU</strong>:让一个 NALU 不超过网络包大小,避免再做 FU-A 分片。</li>
+<li><strong>并行编解码</strong>:多个 slice 可以交给多线程同时处理。</li>
+<li><strong>低延迟</strong>:不用等整帧编码完,一个 slice 好了就能先发。<br>代价:slice 之间<strong>不能做帧内预测</strong>和<strong>去块滤波的跨边界参考</strong>(默认),压缩效率会略降,头部开销也增加。</li>
+</ol>
+<h3 id="NALU-和-slice-的关系与区别-重点"><a href="#NALU-和-slice-的关系与区别-重点" class="headerlink" title="NALU 和 slice 的关系与区别(重点)"></a>NALU 和 slice 的关系与区别(重点)</h3><p><strong>一句话:slice 是”内容”,NALU 是”包装”。slice 是 NALU 的一种(VCL 类),但 NALU 不都是 slice。</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>NALU</th>
+<th>Slice</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>层次</td>
+<td><strong>NAL 层</strong>(封装&#x2F;传输层)</td>
+<td><strong>VCL 层</strong>(编码&#x2F;视频内容层)</td>
+</tr>
+<tr>
+<td>回答的问题</td>
+<td>数据<strong>怎么装、怎么分界、是什么类型</strong></td>
+<td>图像的<strong>哪一块区域、怎么编码</strong></td>
+</tr>
+<tr>
+<td>包含范围</td>
+<td>参数集、SEI、AUD、slice 等<strong>所有</strong>类型</td>
+<td>只是图像像素数据的一部分</td>
+</tr>
+<tr>
+<td>与图像的关系</td>
+<td>不一定和图像有关(SPS&#x2F;PPS 就和具体图像无关)</td>
+<td>一张图像由 1 个或多个 slice 组成</td>
+</tr>
+</tbody></table>
+<p><strong>对应规则</strong>:</p>
+<ul>
+<li><strong>一个 slice 恰好放进一个 NALU</strong>(type 1 或 5)。</li>
+<li>一个 NALU <strong>不一定是 slice</strong>:SPS、PPS、SEI、AUD 都是 NALU,但不是 slice。</li>
+<li>所以:<code>slice ⊂ NALU</code>,”slice NALU”就是 type 1&#x2F;5 的那些 NALU。</li>
+</ul>
+<p><strong>对照记忆表</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>你看到的词</th>
+<th>属于哪层</th>
+<th>例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>nal_unit_type</td>
+<td>NAL header</td>
+<td>1、5、7、8</td>
+</tr>
+<tr>
+<td>slice_type</td>
+<td>slice header</td>
+<td>I、P、B</td>
+</tr>
+<tr>
+<td>pic_parameter_set_id</td>
+<td>slice header</td>
+<td>指向 PPS</td>
+</tr>
+<tr>
+<td>first_mb_in_slice</td>
+<td>slice header</td>
+<td>本 slice 起始宏块</td>
+</tr>
+</tbody></table>
+<h3 id="判断”一个-AU-结束了没有”"><a href="#判断”一个-AU-结束了没有”" class="headerlink" title="判断”一个 AU 结束了没有”"></a>判断”一个 AU 结束了没有”</h3><p>多 slice 时,要把属于同一帧的 slice 凑齐,才算一个完整 AU:</p>
+<ul>
+<li>码流有 <strong>AUD(type 9)</strong> 就用它作分隔;</li>
+<li>否则比较相邻 slice 的 <code>frame_num</code>、<code>pic_parameter_set_id</code>、<code>nal_unit_type</code>(是否 IDR)、POC 等字段,出现变化就说明进入了新 AU;</li>
+<li>RTP 里看 <strong>M 位</strong> 和时间戳。</li>
+</ul>
+<h3 id="和-FFmpeg-的对应"><a href="#和-FFmpeg-的对应" class="headerlink" title="和 FFmpeg 的对应"></a>和 FFmpeg 的对应</h3><table>
+<thead>
+<tr>
+<th>概念</th>
+<th>FFmpeg 里的体现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AU</td>
+<td>一个 <code>AVPacket</code>(FLV demux 出来通常是一个 AU,AVCC 格式)</td>
+</tr>
+<tr>
+<td>NALU</td>
+<td>包内按长度前缀排列的多段数据,<strong>解码器内部拆分</strong>,业务代码通常不碰</td>
+</tr>
+<tr>
+<td>SPS&#x2F;PPS</td>
+<td><code>codecpar-&gt;extradata</code>(AVCC 配置记录),<code>avcodec_open2</code> 时解析</td>
+</tr>
+<tr>
+<td>slice</td>
+<td>解码器内部处理,可多线程并行解 slice(<code>thread_type = FF_THREAD_SLICE</code>)</td>
+</tr>
+<tr>
+<td>IDR 判断</td>
+<td><code>pkt-&gt;flags &amp; AV_PKT_FLAG_KEY</code>(近似),精确要解析 NALU type&#x3D;5</td>
+</tr>
+</tbody></table>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><blockquote>
+<p><strong>NALU</strong> 是 H.264 在 NAL 层的封装单位,1 字节头(forbidden_zero_bit、nal_ref_idc、nal_unit_type)加载荷,类型包括 SPS、PPS、SEI、AUD 和 slice。<strong>Slice</strong> 是一张图像内可独立解码的一块区域,属于 VCL 层,每个 slice 装进一个 NALU(type 1 或 5),所以 slice 是 NALU 的一种,但 NALU 不都是 slice。<strong>Access Unit</strong> 是一张画面对应的一组 NALU,包含一张图像的所有 slice,加上可选的 AUD、SEI 等;FLV 里一个视频 tag 就是一个 AU,FFmpeg 里对应一个 AVPacket。多数场景一帧一个 slice,多 slice 用于抗丢包、适配 MTU 和并行编码。</p>
+</blockquote>
+<hr>
+<h2 id="SPS-序列参数集"><a href="#SPS-序列参数集" class="headerlink" title="SPS:序列参数集"></a>SPS:序列参数集</h2><p>作用于<strong>整个编码视频序列</strong>(从一个 IDR 到下一个 IDR 之前 GOP)。主要内容:</p>
+<ul>
+<li><strong>profile_idc &#x2F; level_idc</strong>:编码档次和级别(Baseline、Main、High;Level 3.1、4.0 等),决定解码器能力要求。</li>
+<li><strong>分辨率</strong>:<code>pic_width_in_mbs_minus1</code>、<code>pic_height_in_map_units_minus1</code>(以宏块为单位),还有 <strong>cropping</strong>(裁剪,比如 1080p 编码时实际是 1088 行,靠 crop 裁成 1080)。</li>
+<li><strong>帧率等 VUI 信息</strong>(可选):时间基、宽高比、颜色空间。</li>
+<li><strong>max_num_ref_frames</strong>:最多参考几帧。</li>
+<li><strong>pic_order_cnt_type</strong> 等:控制显示顺序(和 B 帧、PTS 有关)。</li>
+<li><strong>frame_mbs_only_flag</strong>:是否逐行(影响是否支持隔行扫描)。</li>
+</ul>
+<p><strong>要点</strong>:分辨率不是直接存 1920×1080,而是存宏块数(16×16)再加裁剪,所以从 SPS 解析分辨率要自己算。</p>
+<h2 id="PPS-图像参数集"><a href="#PPS-图像参数集" class="headerlink" title="PPS:图像参数集"></a>PPS:图像参数集</h2><p>作用于<strong>一张或多张图像</strong>,每个 slice header 里通过 <code>pic_parameter_set_id</code> 指向某个 PPS,PPS 再通过 <code>seq_parameter_set_id</code> 指向 SPS。引用链是:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slice → PPS → SPS</span><br></pre></td></tr></table></figure>
+
+<p>主要内容:</p>
+<ul>
+<li><strong>entropy_coding_mode_flag</strong>:熵编码方式,<strong>0 &#x3D; CAVLC,1 &#x3D; CABAC</strong>(Main&#x2F;High profile 才有 CABAC)。</li>
+<li><strong>slice group</strong> 相关(FMO,Baseline 用,现在很少)。</li>
+<li><strong>num_ref_idx_default_active</strong>:默认参考帧数。</li>
+<li><strong>加权预测</strong>、<strong>初始量化参数</strong>(<code>pic_init_qp</code>)。</li>
+<li><strong>deblocking_filter_control_present_flag</strong>:是否在 slice header 里控制去块滤波。</li>
+<li><strong>transform_8x8_mode_flag</strong>:High profile 的 8×8 变换。</li>
+</ul>
+<p><strong>为什么拆成 SPS 和 PPS 两层?</strong> 为了<strong>减少冗余传输</strong>:序列级不变的信息(分辨率等)放 SPS 只发一次,图像级可能变化的参数放 PPS,可以有多个 PPS 供不同图像引用,每帧不需要重复携带全部参数。</p>
+<hr>
+<h2 id="IDR-关键帧中的关键"><a href="#IDR-关键帧中的关键" class="headerlink" title="IDR:关键帧中的关键"></a>IDR:关键帧中的关键</h2><h3 id="I-帧-vs-IDR-帧"><a href="#I-帧-vs-IDR-帧" class="headerlink" title="I 帧 vs IDR 帧"></a>I 帧 vs IDR 帧</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>普通 I 帧</th>
+<th>IDR 帧</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>帧内编码</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>后续帧能否引用它之前的帧</td>
+<td><strong>可以</strong>(B&#x2F;P 帧可能越过 I 帧去引用更早的帧)</td>
+<td><strong>不能</strong>,IDR 之后的帧只能引用 IDR 及之后的帧</td>
+</tr>
+<tr>
+<td>能否作为随机接入点</td>
+<td>不保证</td>
+<td><strong>保证</strong></td>
+</tr>
+<tr>
+<td>对参考帧缓存 (DPB)</td>
+<td>无影响</td>
+<td><strong>立即清空 DPB</strong></td>
+</tr>
+<tr>
+<td>nal_unit_type</td>
+<td>1(slice)</td>
+<td><strong>5</strong></td>
+</tr>
+</tbody></table>
+<p>所以:<strong>IDR 一定是 I 帧,但 I 帧不一定是 IDR。</strong> 从普通 I 帧开始解码,可能因为后续帧引用了它之前的帧而花屏。</p>
+<h3 id="IDR-的作用"><a href="#IDR-的作用" class="headerlink" title="IDR 的作用"></a>IDR 的作用</h3><ol>
+<li><strong>随机接入</strong>:播放器 seek、中途加入直播,必须从 IDR 开始解码。</li>
+<li><strong>错误恢复</strong>:传输出错后,解码器等下一个 IDR 就能彻底复位,错误不再扩散。</li>
+<li><strong>重置参数</strong>:IDR 前后可以更换 SPS&#x2F;PPS(比如换分辨率),新的序列从 IDR 开始。</li>
+<li><strong>POC 和 frame_num 复位</strong>:IDR 之后显示顺序计数从 0 重新开始。</li>
+</ol>
+<h3 id="GOP"><a href="#GOP" class="headerlink" title="GOP"></a>GOP</h3><p><strong>GOP(Group of Pictures)</strong>:两个相邻 IDR 之间的帧序列。直播推流常设 GOP &#x3D; 1~2 秒。</p>
+<ul>
+<li>GOP 太长:起播慢(要等 IDR)、错误恢复慢,但压缩率高。</li>
+<li>GOP 太短:码率高,I 帧占比大。</li>
+<li>HLS 要求<strong>分片起始必须是 IDR</strong>,所以 GOP 要和分片时长对齐。</li>
+</ul>
+<hr>
+<h2 id="在直播协议里它们放哪"><a href="#在直播协议里它们放哪" class="headerlink" title="在直播协议里它们放哪"></a>在直播协议里它们放哪</h2><p>对应几个协议,也是高频考点。</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>SPS&#x2F;PPS 放哪</th>
+<th>视频帧格式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RTMP &#x2F; FLV</strong></td>
+<td>开头一个 <strong>Sequence Header 包</strong>(AVCPacketType&#x3D;0),里面是 <code>AVCDecoderConfigurationRecord</code>,包含 SPS、PPS</td>
+<td><strong>AVCC</strong>:4 字节长度前缀 + NALU</td>
+</tr>
+<tr>
+<td><strong>MP4 &#x2F; fMP4</strong></td>
+<td><code>avcC</code> box(同样是 <code>AVCDecoderConfigurationRecord</code>)</td>
+<td>AVCC</td>
+</tr>
+<tr>
+<td><strong>MPEG-TS &#x2F; HLS(TS)</strong></td>
+<td><strong>随码流内嵌</strong>,通常每个 IDR 前面重复带 SPS+PPS</td>
+<td><strong>Annex-B</strong>:起始码 <code>00 00 00 01</code> 分隔</td>
+</tr>
+<tr>
+<td><strong>RTSP &#x2F; RTP</strong></td>
+<td>SDP 的 <code>sprop-parameter-sets</code>(base64),也可能随码流周期性发送</td>
+<td>RTP 封装(Single NAL &#x2F; STAP-A &#x2F; FU-A)</td>
+</tr>
+</tbody></table>
+<div class="admonition anote admonition-collapsible-wrapper">
+        <details class="admonition-collapsible collapsible-closed" >
+          <summary class="admonition-title">
+            <span class="mdi mdi-note-outline admonition-icon"></span><span class="admonition-title-text">AVCC vs Annex-B(内部实现了解即可)</span><span class="mdi mdi-chevron-down admonition-chevron"></span>
+          </summary><div class="admonition-content">
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Annex-B:  00 00 00 01 [SPS]  00 00 00 01 [PPS]  00 00 00 01 [IDR slice] ...</span><br><span class="line">AVCC:     [4字节长度][NALU]   [4字节长度][NALU] ...  (SPS/PPS 单独放在配置记录里)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>Annex-B 靠<strong>起始码</strong>定界,适合流式、随机接入(可以在任意位置重新同步)。</li>
+<li>AVCC 靠<strong>长度前缀</strong>定界,解析快,适合容器格式。</li>
+<li>两者互转是常见工作:<strong>RTMP&#x2F;FLV 收到的 AVCC 要送给只吃 Annex-B 的解码器(如部分硬解)时,要把长度前缀换成起始码,并在每个 IDR 前插入 SPS&#x2F;PPS。</strong></li>
+</ul>
+<h3 id="AVCDecoderConfigurationRecord-结构-RTMP-Sequence-Header-的内容"><a href="#AVCDecoderConfigurationRecord-结构-RTMP-Sequence-Header-的内容" class="headerlink" title="AVCDecoderConfigurationRecord 结构(RTMP Sequence Header 的内容)"></a>AVCDecoderConfigurationRecord 结构(RTMP Sequence Header 的内容)</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">configurationVersion (1)   = 1</span><br><span class="line">AVCProfileIndication (1)</span><br><span class="line">profile_compatibility (1)</span><br><span class="line">AVCLevelIndication (1)</span><br><span class="line">lengthSizeMinusOne (1)     低 2 位,NALU 长度前缀字节数 - 1(通常是 3,即 4 字节)</span><br><span class="line">numOfSPS (1)               低 5 位</span><br><span class="line">SPS length (2) + SPS data</span><br><span class="line">numOfPPS (1)</span><br><span class="line">PPS length (2) + PPS data</span><br></pre></td></tr></table></figure>
+
+
+</div>
+        </details>
+      </div>
+
+<hr>
+<h2 id="播放器起播流程-整合"><a href="#播放器起播流程-整合" class="headerlink" title="播放器起播流程(整合)"></a>播放器起播流程(整合)</h2><p>以 RTMP &#x2F; HTTP-FLV 拉流为例:</p>
+<ol>
+<li>收到 Sequence Header → 解析出 SPS&#x2F;PPS → <strong>初始化解码器</strong>(知道分辨率、profile)。</li>
+<li>后续视频包的 NALU 是 AVCC 格式,按长度前缀拆出 NALU。</li>
+<li><strong>丢弃 IDR 之前的非 IDR 帧</strong>(P&#x2F;B 帧没有参考,解了也是花屏),直到遇到第一个 IDR 才开始送显。</li>
+<li>之后正常解码、渲染。</li>
+</ol>
+<p>所以前面提到”服务端缓存 Sequence Header + 最近一个 GOP”做秒开,就是<strong>保证新观众一连上就拿到 SPS&#x2F;PPS 和一个 IDR</strong>。</p>
+<h3 id="用-FFmpeg-时-每一步对应哪段代码"><a href="#用-FFmpeg-时-每一步对应哪段代码" class="headerlink" title="用 FFmpeg 时,每一步对应哪段代码"></a>用 FFmpeg 时,每一步对应哪段代码</h3><table>
+<thead>
+<tr>
+<th>原理步骤</th>
+<th>FFmpeg 里对应的调用</th>
+<th>谁在做事</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>收到 Sequence Header,取出 SPS&#x2F;PPS</td>
+<td><code>avformat_open_input</code> + <code>avformat_find_stream_info</code></td>
+<td>FLV demuxer 把 Sequence Header 原样放进 <code>stream-&gt;codecpar-&gt;extradata</code>(即 AVCC 格式的配置记录)</td>
+</tr>
+<tr>
+<td>初始化解码器</td>
+<td><code>avcodec_parameters_to_context</code> → <code>avcodec_open2</code></td>
+<td>H.264 解码器在 open 时解析 extradata:取 SPS&#x2F;PPS,记下 NALU 长度前缀字节数</td>
+</tr>
+<tr>
+<td>按长度前缀拆 NALU</td>
+<td><code>avcodec_send_packet</code></td>
+<td>解码器内部完成,你的代码里看不到循环</td>
+</tr>
+<tr>
+<td>丢弃 IDR 之前的帧</td>
+<td>解码器内部有保护,你也可以自己加</td>
+<td>见下文</td>
+</tr>
+<tr>
+<td>解码、渲染</td>
+<td><code>avcodec_receive_frame</code> → 渲染</td>
+<td>你的代码</td>
+</tr>
+</tbody></table>
+<p>加上前面的 demux 和后面的 receive。</p>
+<p>骨架如下:</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 1. 打开输入,探测流信息(此时 extradata 里已有 SPS/PPS)</span></span><br><span class="line"><span class="built_in">avformat_open_input</span>(&amp;fmt, url, <span class="literal">nullptr</span>, &amp;opts);</span><br><span class="line"><span class="built_in">avformat_find_stream_info</span>(fmt, <span class="literal">nullptr</span>);</span><br><span class="line"><span class="type">int</span> vi = <span class="built_in">av_find_best_stream</span>(fmt, AVMEDIA_TYPE_VIDEO, <span class="number">-1</span>, <span class="number">-1</span>, <span class="literal">nullptr</span>, <span class="number">0</span>);</span><br><span class="line">AVCodecParameters* par = fmt-&gt;streams[vi]-&gt;codecpar;   <span class="comment">// par-&gt;extradata 就是 avcC</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 2. 初始化解码器</span></span><br><span class="line"><span class="type">const</span> AVCodec* codec = <span class="built_in">avcodec_find_decoder</span>(par-&gt;codec_id);</span><br><span class="line">AVCodecContext* ctx = <span class="built_in">avcodec_alloc_context3</span>(codec);</span><br><span class="line"><span class="built_in">avcodec_parameters_to_context</span>(ctx, par);</span><br><span class="line"><span class="built_in">avcodec_open2</span>(ctx, codec, <span class="literal">nullptr</span>);                    <span class="comment">// 这里解析 SPS/PPS</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 3. 循环:读包、送解码、取帧</span></span><br><span class="line"><span class="keyword">while</span> (<span class="built_in">av_read_frame</span>(fmt, pkt) &gt;= <span class="number">0</span>) &#123;</span><br><span class="line">    <span class="keyword">if</span> (pkt-&gt;stream_index == vi) &#123;</span><br><span class="line">        <span class="built_in">avcodec_send_packet</span>(ctx, pkt);</span><br><span class="line">        <span class="keyword">while</span> (<span class="built_in">avcodec_receive_frame</span>(ctx, frame) == <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="built_in">render</span>(frame);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="built_in">av_packet_unref</span>(pkt);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="SPS-PPS-相关的实战细节"><a href="#SPS-PPS-相关的实战细节" class="headerlink" title="SPS&#x2F;PPS 相关的实战细节"></a>SPS&#x2F;PPS 相关的实战细节</h3><ol>
+<li><strong>extradata 为空会怎样</strong>:AVCC 流(FLV&#x2F;MP4)里解码器靠 extradata 初始化。TS 或裸流是 Annex-B,SPS&#x2F;PPS 在码流里,<code>find_stream_info</code> 要读到若干包才能解析出来,所以启动会慢一点。</li>
+<li><strong>推流中途分辨率&#x2F;参数变化</strong>:RTMP 会再发一个 Sequence Header。FFmpeg 的 FLV demuxer 会把它作为 <code>AV_PKT_DATA_NEW_EXTRADATA</code> 的 side data 挂在后续包上,H.264 解码器会据此更新 SPS&#x2F;PPS。但<strong>渲染端要处理 <code>frame-&gt;width/height</code> 变化</strong>(重建纹理或缩放上下文),否则会花屏或崩溃。</li>
+<li><strong>起播慢的常见原因</strong>:<code>avformat_find_stream_info</code> 默认会读较多数据来探测。直播里常调小 <code>probesize</code>、<code>analyzeduration</code>,并加 <code>fflags=nobuffer</code>、<code>flags=low_delay</code>。代价是探测不充分时可能拿不到完整的流信息,需要实测。</li>
+</ol>
+<h3 id="IDR-相关的实战细节"><a href="#IDR-相关的实战细节" class="headerlink" title="IDR 相关的实战细节"></a>IDR 相关的实战细节</h3><ol>
+<li><strong>FFmpeg 自带保护</strong>:H.264 解码器内部有”恢复”状态,默认情况下,还没遇到 IDR(或 SEI recovery point)时,不会输出参考不完整的帧,所以从 P 帧起播通常不会直接吐出花屏画面。具体行为受版本和标志位影响(例如 <code>AV_CODEC_FLAG_OUTPUT_CORRUPT</code> 会允许输出损坏帧),我记忆里的细节不一定精确,建议用你的 FFmpeg 版本实测。</li>
+<li><strong>自己判断关键帧</strong>:<ul>
+<li><code>pkt-&gt;flags &amp; AV_PKT_FLAG_KEY</code>:FLV demuxer 根据 FrameType 设置,它表示”关键帧”,<strong>不严格等于 IDR</strong>。</li>
+<li>解码后看 <code>frame-&gt;pict_type == AV_PICTURE_TYPE_I</code>,同样只说明是 I 帧。</li>
+<li>要精确判断 IDR,只能解析 NALU 类型是否为 5。</li>
+</ul>
+</li>
+<li><strong>什么时候值得自己丢帧</strong>:弱网丢包、断线重连、切流后,你想控制”从下一个 IDR 才开始显示”,可以自己维护一个标志位:</li>
+</ol>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">bool</span> waitIDR = <span class="literal">true</span>;          <span class="comment">// 起播/重连/出错后置 true</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 收到包后:</span></span><br><span class="line"><span class="keyword">if</span> (waitIDR) &#123;</span><br><span class="line">    <span class="keyword">if</span> (!(pkt-&gt;flags &amp; AV_PKT_FLAG_KEY)) &#123; <span class="built_in">av_packet_unref</span>(pkt); <span class="keyword">continue</span>; &#125;</span><br><span class="line">    waitIDR = <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">avcodec_flush_buffers</span>(ctx);   <span class="comment">// 清掉解码器里的旧参考帧</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="built_in">avcodec_send_packet</span>(ctx, pkt);</span><br></pre></td></tr></table></figure>
+<p>关键是 <strong><code>avcodec_flush_buffers</code></strong>:重连、seek、切换流时必须调用,等于手动实现”IDR 清空 DPB”的效果,否则旧参考帧会污染新画面。</p>
+<h3 id="硬解时的差别"><a href="#硬解时的差别" class="headerlink" title="硬解时的差别"></a>硬解时的差别</h3><p>用 <code>hw_device_ctx</code> 做硬解时,<strong>SPS&#x2F;PPS 和 IDR 的处理流程不变</strong>,仍然是 extradata 初始化、送包。区别只是 <code>avcodec_receive_frame</code> 拿到的是硬件表面(如 D3D11、VAAPI 的 surface),需要 <code>av_hwframe_transfer_data</code> 拷回内存,或直接用于零拷贝渲染。只有绕开 FFmpeg、直接调平台原生解码接口时,才要考虑 AVCC 转 Annex-B。</p>
+<h3 id="面试回答模板"><a href="#面试回答模板" class="headerlink" title="面试回答模板"></a>面试回答模板</h3><blockquote>
+<p>我们的播放器用 FFmpeg 拉 FLV 流。demuxer 把 Sequence Header 放进 <code>codecpar-&gt;extradata</code>,里面是 AVCC 格式的 SPS&#x2F;PPS;通过 <code>avcodec_parameters_to_context</code> 传给解码上下文,<code>avcodec_open2</code> 时解码器解析 SPS&#x2F;PPS 完成初始化,之后送入的包是长度前缀格式,由库内部拆 NALU。<br>起播时我只显示从关键帧开始的画面,重连、seek 时调用 <code>avcodec_flush_buffers</code> 清空参考帧。推流中途如果分辨率变化,会收到新的 Sequence Header,解码器会更新参数,渲染端要同步处理帧尺寸变化。为了加快起播,我调小了 <code>probesize</code> 和 <code>analyzeduration</code>,服务端也缓存了 Sequence Header 和最近一个 GOP。</p>
+</blockquote>
+<hr>
+<h2 id="高频追问"><a href="#高频追问" class="headerlink" title="高频追问"></a>高频追问</h2><ol>
+<li><strong>花屏&#x2F;绿屏常见原因?</strong> 没有 SPS&#x2F;PPS 就开始解码;从非 IDR 帧起播;丢包导致参考帧缺失。<strong>解决</strong>:起播等 IDR,检测到丢包就丢帧并等下一个 IDR。</li>
+<li><strong>推流中途 SPS&#x2F;PPS 变了怎么办?</strong> 说明分辨率或编码参数变了。RTMP 下会再发一个新的 Sequence Header,播放器要<strong>重新初始化解码器</strong>;MPEG-TS 下则是新的 IDR 前带新的 SPS&#x2F;PPS。</li>
+<li><strong>怎么判断一个包是不是关键帧?</strong> RTMP&#x2F;FLV 里看 FrameType &#x3D; 1;但更准确的是<strong>解析 NALU 的 type 是否为 5</strong>。FrameType &#x3D; 1 只表示”关键帧”,部分编码器的非 IDR I 帧也可能标成关键帧,需要警惕。</li>
+<li><strong>HEVC 呢?</strong> 多了一层 <strong>VPS(Video Parameter Set)</strong>,所以是 <strong>VPS + SPS + PPS</strong>;NALU 头是 2 字节;关键帧类型有 IDR_W_RADL &#x2F; IDR_N_LP(19、20)、CRA(21)等,CRA 不一定能作为严格的随机接入点(可能带前导帧),这点和 H.264 的 IDR 略有不同。</li>
+</ol>
+<hr>
+<h2 id="面试回答模板-1"><a href="#面试回答模板-1" class="headerlink" title="面试回答模板"></a>面试回答模板</h2><blockquote>
+<p>H.264 码流由 NALU 组成。<strong>SPS</strong> 是序列级参数集,包含 profile&#x2F;level、分辨率(以宏块为单位加裁剪)、参考帧数等;<strong>PPS</strong> 是图像级参数集,包含熵编码方式(CAVLC&#x2F;CABAC)、量化初值等,slice 通过 PPS id 引用 PPS,PPS 再引用 SPS。解码器必须先拿到 SPS&#x2F;PPS 才能初始化。<br><strong>IDR</strong> 是一种特殊的 I 帧,解码到它时会清空参考帧缓存,之后的帧不会引用它之前的帧,所以它是随机接入点,也用于错误恢复。普通 I 帧不保证这一点。<br>所以起播时需要先等 SPS&#x2F;PPS,再从第一个 IDR 开始送显,避免花屏。</p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz">逸人</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%911/">https://blog.x1ren.xyz/2026/10/14/笔记/音视频/音视频1/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.x1ren.xyz" target="_blank">逸人の博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/%E9%9F%B3%E8%A7%86%E9%A2%91/">音视频</a><a class="post-meta__tags" href="/tags/H-264/">H.264</a></div><div class="post-share"><div class="social-share" data-image="/./img/avatar.jpg" data-sites="twitter,wechat,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E6%92%AD%E6%94%BE%E5%99%A8%E8%B5%B7%E6%92%AD%E6%B5%81%E7%A8%8B/" title="播放器起播流程（整合 FFmpeg 实战）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">播放器起播流程（整合 FFmpeg 实战）</div></div><div class="info-2"><div class="info-item-1">BTV 解析</div></div></div></a><a class="pagination-related" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">内窥镜影像采集与病灶辅助分析工作站</div></div><div class="info-2"><div class="info-item-1">内窥镜影像采集与病灶辅助分析工作站图像针对息肉（突起）、炎症&#x2F;糜烂（红色）处理。 内镜图像增强开发降噪、亮度调整、对比度拉伸和色彩校正处理，使用双边滤波抑制图像噪声并保留黏膜边缘；通过 LUT 完成像素映射，并结合组织区域掩膜排除暗区、反光区和无效边缘。 输入是 1920×1080、8 位 NV12、BT.709 有限范围。先按 709 矩阵把 Y&#x3D;16～235、UV&#x3D;16～240 转成 RGB8 的 0～255 数值，再依次执行：原图生成掩膜 → 双边滤波 → 三维 LUT 色彩校正 → 颜色转换（RGB → YCrCb&#x2F;YUV） → 一维 LUT 亮度（Y1）调整 → CLAHE 对比度增强(Y2) → 恢复 RGB → 掩膜融合。 掩膜从未经增强的原图生成，避免先提亮后把暗区误判成有效区。双边滤波先抑制细小波动，随后亮度、对比度变换不会先把噪声放大。色彩校正采用三维 LUT 色彩校正，放在亮度调整之前。后两项选择性启用，先亮度后 CLAHE。 降噪基线采用原分辨率、邻域直径 5、sigmaColor&#x3D;20、sigmaSpac...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E6%92%AD%E6%94%BE%E5%99%A8%E8%B5%B7%E6%92%AD%E6%B5%81%E7%A8%8B/" title="播放器起播流程（整合 FFmpeg 实战）"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-14</div><div class="info-item-2">播放器起播流程（整合 FFmpeg 实战）</div></div><div class="info-2"><div class="info-item-1">BTV 解析</div></div></div></a><a class="pagination-related" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/H264/" title="几种音视频编码标准"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-14</div><div class="info-item-2">几种音视频编码标准</div></div><div class="info-2"><div class="info-item-1">H.264/H.265/AV1 编码</div></div></div></a><a class="pagination-related" href="/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/" title="音视频编解码基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-09-12</div><div class="info-item-2">音视频编解码基础</div></div><div class="info-2"><div class="info-item-1">音视频公式编解码流程。包括 ，AAC/PCM 编码，fmp4/ts/flv 视频容器等。</div></div></div></a><a class="pagination-related" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E5%8D%8F%E8%AE%AE/" title="音视频编解码基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2026-10-14</div><div class="info-item-2">音视频编解码基础</div></div><div class="info-2"><div class="info-item-1">RTP/RTMP/RTSP/HTTP-FLV/HLS 等协议。</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">逸人</div><div class="author-info-description">记忆保存库</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/x1renn"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/x1renn" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:x1ren@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/id/979869114/" target="_blank" title="Steam"><i class="fa-brands fa-steam" style="color: #hdhfbb;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽哈喽🍍</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#NALU-%E5%9F%BA%E7%A1%80"><span class="toc-number">1.</span> <span class="toc-text">NALU 基础</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Access-Unit-%E8%AE%BF%E9%97%AE%E5%8D%95%E5%85%83-AU"><span class="toc-number">1.1.</span> <span class="toc-text">Access Unit(访问单元,AU)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NALU-NAL-Unit"><span class="toc-number">1.2.</span> <span class="toc-text">NALU(NAL Unit)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E7%BB%93%E6%9E%84"><span class="toc-number">1.2.1.</span> <span class="toc-text">结构</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Slice-%E6%9D%A1%E5%B8%A6"><span class="toc-number">1.3.</span> <span class="toc-text">Slice(条带)</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#slice-%E7%9A%84%E7%B1%BB%E5%9E%8B"><span class="toc-number">1.3.1.</span> <span class="toc-text">slice 的类型</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#slice-header-%E9%87%8C%E6%9C%89%E4%BB%80%E4%B9%88"><span class="toc-number">1.3.2.</span> <span class="toc-text">slice header 里有什么</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E4%B8%80%E5%B8%A7%E4%B8%80%E4%B8%AA-slice-%E8%BF%98%E6%98%AF%E5%A4%9A%E4%B8%AA"><span class="toc-number">1.3.3.</span> <span class="toc-text">一帧一个 slice,还是多个</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%88%86%E5%A4%9A%E4%B8%AA-slice"><span class="toc-number">1.3.3.1.</span> <span class="toc-text">为什么要分多个 slice</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#NALU-%E5%92%8C-slice-%E7%9A%84%E5%85%B3%E7%B3%BB%E4%B8%8E%E5%8C%BA%E5%88%AB-%E9%87%8D%E7%82%B9"><span class="toc-number">1.4.</span> <span class="toc-text">NALU 和 slice 的关系与区别(重点)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A4%E6%96%AD%E2%80%9D%E4%B8%80%E4%B8%AA-AU-%E7%BB%93%E6%9D%9F%E4%BA%86%E6%B2%A1%E6%9C%89%E2%80%9D"><span class="toc-number">1.5.</span> <span class="toc-text">判断”一个 AU 结束了没有”</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%92%8C-FFmpeg-%E7%9A%84%E5%AF%B9%E5%BA%94"><span class="toc-number">1.6.</span> <span class="toc-text">和 FFmpeg 的对应</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">1.7.</span> <span class="toc-text">总结</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#SPS-%E5%BA%8F%E5%88%97%E5%8F%82%E6%95%B0%E9%9B%86"><span class="toc-number">2.</span> <span class="toc-text">SPS:序列参数集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#PPS-%E5%9B%BE%E5%83%8F%E5%8F%82%E6%95%B0%E9%9B%86"><span class="toc-number">3.</span> <span class="toc-text">PPS:图像参数集</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#IDR-%E5%85%B3%E9%94%AE%E5%B8%A7%E4%B8%AD%E7%9A%84%E5%85%B3%E9%94%AE"><span class="toc-number">4.</span> <span class="toc-text">IDR:关键帧中的关键</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#I-%E5%B8%A7-vs-IDR-%E5%B8%A7"><span class="toc-number">4.1.</span> <span class="toc-text">I 帧 vs IDR 帧</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDR-%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-number">4.2.</span> <span class="toc-text">IDR 的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GOP"><span class="toc-number">4.3.</span> <span class="toc-text">GOP</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%A8%E7%9B%B4%E6%92%AD%E5%8D%8F%E8%AE%AE%E9%87%8C%E5%AE%83%E4%BB%AC%E6%94%BE%E5%93%AA"><span class="toc-number">5.</span> <span class="toc-text">在直播协议里它们放哪</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#AVCDecoderConfigurationRecord-%E7%BB%93%E6%9E%84-RTMP-Sequence-Header-%E7%9A%84%E5%86%85%E5%AE%B9"><span class="toc-number">5.1.</span> <span class="toc-text">AVCDecoderConfigurationRecord 结构(RTMP Sequence Header 的内容)</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%92%AD%E6%94%BE%E5%99%A8%E8%B5%B7%E6%92%AD%E6%B5%81%E7%A8%8B-%E6%95%B4%E5%90%88"><span class="toc-number">6.</span> <span class="toc-text">播放器起播流程(整合)</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%A8-FFmpeg-%E6%97%B6-%E6%AF%8F%E4%B8%80%E6%AD%A5%E5%AF%B9%E5%BA%94%E5%93%AA%E6%AE%B5%E4%BB%A3%E7%A0%81"><span class="toc-number">6.1.</span> <span class="toc-text">用 FFmpeg 时,每一步对应哪段代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#SPS-PPS-%E7%9B%B8%E5%85%B3%E7%9A%84%E5%AE%9E%E6%88%98%E7%BB%86%E8%8A%82"><span class="toc-number">6.2.</span> <span class="toc-text">SPS&#x2F;PPS 相关的实战细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#IDR-%E7%9B%B8%E5%85%B3%E7%9A%84%E5%AE%9E%E6%88%98%E7%BB%86%E8%8A%82"><span class="toc-number">6.3.</span> <span class="toc-text">IDR 相关的实战细节</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%A1%AC%E8%A7%A3%E6%97%B6%E7%9A%84%E5%B7%AE%E5%88%AB"><span class="toc-number">6.4.</span> <span class="toc-text">硬解时的差别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94%E6%A8%A1%E6%9D%BF"><span class="toc-number">6.5.</span> <span class="toc-text">面试回答模板</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%AB%98%E9%A2%91%E8%BF%BD%E9%97%AE"><span class="toc-number">7.</span> <span class="toc-text">高频追问</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%9D%A2%E8%AF%95%E5%9B%9E%E7%AD%94%E6%A8%A1%E6%9D%BF-1"><span class="toc-number">8.</span> <span class="toc-text">面试回答模板</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E5%8D%8F%E8%AE%AE/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:32:29.859Z" title="更新于 2026-10-14 05:32:29">2026-10-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:31:12.809Z" title="更新于 2026-10-14 05:31:12">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/09/C++/projects/project3/" title="简历项目"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="简历项目"/></a><div class="content"><a class="title" href="/2026/09/09/C++/projects/project3/" title="简历项目">简历项目</a><time datetime="2026-10-13T21:28:45.239Z" title="更新于 2026-10-14 05:28:45">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内窥镜影像采集与病灶辅助分析工作站"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站">内窥镜影像采集与病灶辅助分析工作站</a><time datetime="2026-10-13T21:25:02.430Z" title="更新于 2026-10-14 05:25:02">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="网络相机图传与多相机集中管理系统"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统">网络相机图传与多相机集中管理系统</a><time datetime="2026-10-13T21:24:30.954Z" title="更新于 2026-10-14 05:24:30">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By 逸人</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.4.3"></script><script src="/js/main.js?v=5.4.3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Twikoo' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script>window.newestComments = {
+  changeContent: content => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<code>.*?<\/code>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g, "") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0, 150) + '...'
+    }
+    return content
+  },
+
+  generateHtml: (array, ele) => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class="aside-list-item">'
+
+        if (true && array[i].avatar) {
+          const imgAttr = 'src'
+          const lazyloadNative = ''
+          result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+        }
+
+        result += `<div class="content">
+        <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
+        <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '暂无评论'
+    }
+
+    ele.innerHTML = result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh(ele)
+  },
+
+  newestCommentInit: (name, getComment) => {
+    const $dom = document.querySelector('#card-newest-comments .aside-list')
+    if ($dom) {
+      const data = btf.saveToLocal.get(name)
+      if (data) {
+        newestComments.generateHtml(JSON.parse(data), $dom)
+      } else {
+        getComment($dom)
+      }
+    }
+  },
+
+  run: (name, getComment) => {
+    newestComments.newestCommentInit(name, getComment)
+    btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
+  }
+}</script><script>window.addEventListener('load', () => {
+  const keyName = 'twikoo-newest-comments'
+  const { changeContent, generateHtml, run } = window.newestComments
+
+  const getComment = ele => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://1-zeta-olive.vercel.app/',
+        region: '',
+        pageSize: 4,
+        includeReply: true
+      }).then(res => {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        btf.saveToLocal.set(keyName, JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray, ele)
+      }).catch(err => {
+        console.error(err)
+        ele.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  run(keyName, getComment)
+})</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/click-heart.min.js" async="async" mobile="false"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="https://testingcf.jsdelivr.net/gh/Mr-EEEeee/Mr-EEEeee.github.io/js/search/local-search.js"></script></div></div></body></html>

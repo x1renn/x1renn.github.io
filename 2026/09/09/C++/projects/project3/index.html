@@ -1,0 +1,603 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>简历项目 | 逸人の博客</title><meta name="author" content="逸人,x1ren@qq.com"><meta name="copyright" content="逸人"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#FFF5E1"><meta name="description" content="简历项目重点">
+<meta property="og:type" content="article">
+<meta property="og:title" content="简历项目">
+<meta property="og:url" content="https://blog.x1ren.xyz/2026/09/09/C++/projects/project3/index.html">
+<meta property="og:site_name" content="逸人の博客">
+<meta property="og:description" content="简历项目重点">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png">
+<meta property="article:published_time" content="2026-09-08T18:03:37.000Z">
+<meta property="article:modified_time" content="2026-10-13T21:28:45.239Z">
+<meta property="article:author" content="逸人">
+<meta property="article:tag" content="C++">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png"><script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "简历项目",
+  "url": "https://blog.x1ren.xyz/2026/09/09/C++/projects/project3/",
+  "image": "https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png",
+  "datePublished": "2026-09-08T18:03:37.000Z",
+  "dateModified": "2026-10-13T21:28:45.239Z",
+  "author": [
+    {
+      "@type": "Person",
+      "name": "逸人",
+      "url": "https://blog.x1ren.xyz"
+    }
+  ]
+}</script><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="https://blog.x1ren.xyz/2026/09/09/C++/projects/project3/index.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css?v=5.4.3"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.7.2/css/all.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script>
+    (() => {
+      
+    const saveToLocal = {
+      set: (key, value, ttl) => {
+        if (!ttl) return
+        const expiry = Date.now() + ttl * 86400000
+        localStorage.setItem(key, JSON.stringify({ value, expiry }))
+      },
+      get: key => {
+        const itemStr = localStorage.getItem(key)
+        if (!itemStr) return undefined
+        const { value, expiry } = JSON.parse(itemStr)
+        if (Date.now() > expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return value
+      }
+    }
+
+    window.btf = {
+      saveToLocal,
+      getScript: (url, attr = {}) => new Promise((resolve, reject) => {
+        const script = document.createElement('script')
+        script.src = url
+        script.async = true
+        Object.entries(attr).forEach(([key, val]) => script.setAttribute(key, val))
+        script.onload = script.onreadystatechange = () => {
+          if (!script.readyState || /loaded|complete/.test(script.readyState)) resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      }),
+      getCSS: (url, id) => new Promise((resolve, reject) => {
+        const link = document.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = url
+        if (id) link.id = id
+        link.onload = link.onreadystatechange = () => {
+          if (!link.readyState || /loaded|complete/.test(link.readyState)) resolve()
+        }
+        link.onerror = reject
+        document.head.appendChild(link)
+      }),
+      addGlobalFn: (key, fn, name = false, parent = window) => {
+        if (!true && key.startsWith('pjax')) return
+        const globalFn = parent.globalFn || {}
+        globalFn[key] = globalFn[key] || {}
+        globalFn[key][name || Object.keys(globalFn[key]).length] = fn
+        parent.globalFn = globalFn
+      }
+    }
+  
+      
+      const activateDarkMode = () => {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#2A2A2A')
+        }
+      }
+      const activateLightMode = () => {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#FFF5E1')
+        }
+      }
+
+      btf.activateDarkMode = activateDarkMode
+      btf.activateLightMode = activateLightMode
+
+      const theme = saveToLocal.get('theme')
+    
+          theme === 'dark' ? activateDarkMode() : theme === 'light' ? activateLightMode() : null
+        
+      
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        document.documentElement.classList.toggle('hide-aside', asideStatus === 'hide')
+      }
+    
+      
+    const detectApple = () => {
+      if (/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)) {
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+  
+    })()
+  </script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":true,"languages":{"hits_empty":"未找到符合您查询的内容：${query}","hits_stats":"共找到 ${hits} 篇文章"}},
+  translate: undefined,
+  highlight: {"plugin":"highlight.js","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":200,"highlightFullpage":false,"highlightMacStyle":false},
+  copy: {
+    success: '复制成功',
+    error: '复制失败',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: {"limitCount":100,"languages":{"author":"作者: 逸人","link":"链接: ","source":"来源: 逸人の博客","info":"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。"}},
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  infinitegrid: {
+    js: 'https://cdn.jsdelivr.net/npm/@egjs/infinitegrid@4.12.0/dist/infinitegrid.min.js',
+    buttonText: '加载更多'
+  },
+  isPhotoFigcaption: true,
+  islazyloadPlugin: false,
+  isAnchor: false,
+  percent: {
+    toc: true,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '简历项目',
+  isHighlightShrink: false,
+  isToc: true,
+  pageType: 'post'
+}</script><link rel="stylesheet" href="/css/words.css"><link rel="stylesheet" href="/css/transparency.css"><link rel="stylesheet" href="/css/admonition.css"><link rel="stylesheet" href="/css/table.css"><meta name="generator" content="Hexo 7.3.0"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" id="hexo-admonition-icon-injected">
+  </head><body><div id="web_bg" style="background-image: url(/img/wb-bg.png);"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img text-center"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data text-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url(https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png);"><nav id="nav"><span id="blog-info"><a class="nav-site-title" href="/"><span class="site-name">逸人の博客</span></a><a class="nav-page-title" href="/"><span class="site-name">简历项目</span><span class="site-name"><i class="fa-solid fa-circle-arrow-left"></i><span>  返回首页</span></span></a></span><div id="menus"><div id="search-button"><span class="site-page social-icon search"><i class="fas fa-search fa-fw"></i><span> 搜索</span></span></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><span class="site-page group"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down"></i></span><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> Music</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> Movie</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><span class="site-page"><i class="fas fa-bars fa-fw"></i></span></div></div></nav><div id="post-info"><h1 class="post-title">简历项目</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2026-09-08T18:03:37.000Z" title="发表于 2026-09-09 02:03:37">2026-09-09</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2026-10-13T21:28:45.239Z" title="更新于 2026-10-14 05:28:45">2026-10-14</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E7%AC%94%E8%AE%B0/">笔记</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">总字数:</span><span class="word-count">5.5k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">阅读时长:</span><span>17分钟</span></span><span class="post-meta-separator">|</span><span id="" data-flag-title=""><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">浏览量:</span><span id="twikoo_visitors"><i class="fa-solid fa-spinner fa-spin"></i></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="container post-content" id="article-container"><h2 id="AvatarX-智能终端平台"><a href="#AvatarX-智能终端平台" class="headerlink" title="AvatarX 智能终端平台"></a>AvatarX 智能终端平台</h2><h3 id="实时美颜模块-OpenCV"><a href="#实时美颜模块-OpenCV" class="headerlink" title="实时美颜模块 OpenCV"></a>实时美颜模块 OpenCV</h3><ol>
+<li><p><strong>双边滤波</strong> 距离近 + 颜色相近的像素权重大；距离远或颜色差异大的像素权重小。<br><strong>降采样</strong>：宽高都缩到四分之一，1920×1080 变为 480×270。</p>
+<p><em>“我在小图上用双边滤波降低细小波动，再放大与原图混合。双边权重兼顾距离和颜色差，减少跨边缘模糊；降采样减少计算量，但会牺牲细节”</em></p>
+</li>
+<li><p><strong>LUT</strong> 以空间换时间，用一个数组存储预计算结果，直接根据颜色去索引映射至目标值。<br>创建了 <code>1×256</code> 的 <code>CV_8UC1</code> 表<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/604897964">https://zhuanlan.zhihu.com/p/604897964</a><br><a target="_blank" rel="noopener" href="https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&lang=zh-CN">https://dev.epicgames.com/documentation/unreal-engine/using-lookup-tables-for-color-grading-in-unreal-engine?application_version=5.5&amp;lang=zh-CN</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/m0_51133195/article/details/154124578">https://blog.csdn.net/m0_51133195/article/details/154124578</a></p>
+<p><em>“美白曲线本来需要算对数，我把 256 个输入的结果预计算成表。参数没变就复用，每帧只做查表。”</em></p>
+</li>
+<li><p><strong>局部形变</strong> 反向映射，离中心越远，形变越弱，到边界为零。</p>
+</li>
+<li><p>妆容即口红，以两个嘴角的中点作为中心，嘴角距离决定椭圆尺寸；生成椭圆 mask，再高斯模糊边缘，即“羽化”。减少 G、增加 R，形成红润效果。</p>
+</li>
+<li><p><strong>GPU 磨皮</strong> 以 RGB 通道颜色综合阈值判断肤色，命中肤色的中心像素做邻域均值再混合。（HLSL shader）</p>
+</li>
+</ol>
+<p><em>“我的优化思路分为<strong>计算</strong>和<strong>数据传输</strong>两部分，让 GPU 和 CPU 混合处理。计算方面，大眼、瘦脸等特效需要为多个位置重复进行复杂计算，可以用 SIMD 指令进行 CPU 多核并行计算，来批量生成映射，再由 GPU 执行重映射。数据传输方面，利用 cuda 尽可能让特效按顺序在 GpuMat 上连续处理显存中的图像，避免每个效果在 GPU 和 CPU 间反复拷贝。对于高度依赖 CPU 复杂数学逻辑的特性（贴纸特效），只下载必要的 ROI（局部区域），用 OpenCV 函数和复杂数学计算处理后回写原 GPU 区域，规避 PCIe 带宽瓶颈。”</em></p>
+<h3 id="面部驱动"><a href="#面部驱动" class="headerlink" title="面部驱动"></a>面部驱动</h3><ul>
+<li><strong>YuNet</strong> 是人脸检测模型</li>
+<li><strong>ONNX</strong> 是存储模型计算结构和权重的格式,通过 OpenCV 的 FaceDetectorYN 加载 .onnx</li>
+<li>检测回答“哪里有人脸”；关键点定位回答“这张脸的眼鼻嘴在哪”</li>
+</ul>
+<ol>
+<li>每张检测结果有 15 个数：框的位置和宽高 4 个、5 个点的 x&#x2F;y 共 10 个、分数 1 个。点序为右眼、左眼、鼻尖、右嘴角、左嘴角。</li>
+<li>处理检测节流：缩到 320×320，每两个处理帧检测一次</li>
+<li>丢失帧沿用上帧数据：丢失帧&lt;5沿用，以抗闪烁</li>
+<li>参数平滑逻辑：权重平滑，进一步降低坐标抖动。（平滑后&#x3D;0.7×上次平滑值+0.3×本次检测值）</li>
+</ol>
+<h3 id="数字人道具模块"><a href="#数字人道具模块" class="headerlink" title="数字人道具模块"></a>数字人道具模块</h3><ol>
+<li>warpAffine 仿射变换，双眼两个点可以给出三个信息：中点代表位置，距离代表大小，连线方向代表平面内角度。计算 <code>dx=rightEye.x-leftEye.x</code>、<code>dy=rightEye.y-leftEye.y</code>，再取 <code>angle=-atan2(dy,dx)×180/π</code>，斜率即倾斜角度。</li>
+<li>眼距 <code>sqrt(dx²+dy²)</code>，目标贴纸宽度为眼距的 2.5 倍。</li>
+</ol>
+<h3 id="渲染管线模块"><a href="#渲染管线模块" class="headerlink" title="渲染管线模块"></a>渲染管线模块</h3><ol>
+<li><p><strong>YUV</strong> 中 Y 表示亮度，U&#x2F;V 表示色度。人眼对亮度细节更敏感，因此可以保留更多亮度信息、减少色度采样。4:2:0 表示图像中每个 2×2 像素区域有 4 个 Y，配一组 U&#x2F;V。<br><strong>NV12</strong> 把所有 Y 放在一个平面，再把 U&#x2F;V 交错放在第二个平面。YUV420P 则是 Y、U、V 三个独立平面。两者都是 4:2:0，但字节排列不同。<br><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/1888633916459569669">https://zhuanlan.zhihu.com/p/1888633916459569669</a><br><a target="_blank" rel="noopener" href="https://blog.csdn.net/byhook/article/details/84037338">https://blog.csdn.net/byhook/article/details/84037338</a></p>
+</li>
+<li><p>色彩矩阵：把 RGB 换成 Y、U、V。8 位 Limited Range 的 Y 映射到 16～235，色度映射到 16～240。</p>
+</li>
+<li><p>色彩分级：整体调色滤镜，3维 LUT，用 512×512 图片保存一个 64×64×64 的颜色立方体：64 个蓝色切片按 8×8 平铺，每个切片内部是红绿坐标。</p>
+</li>
+<li><p>读写同一张纹理冲突黑屏问题：A 已经绑定为输出 → 又尝试把 A 绑定为 shader 输入时，D3D11 会检测到冲突，<strong>将冲突的输入槽置为 <code>NULL</code>，而不是按要求绑定 A</strong>。</p>
+<p><em>“同一资源不应同时作为 shader 输入与渲染输出。绑定冲突时 D3D11 可能将输入槽置空，随后采样得不到预期画面。需要清理绑定，并加互斥锁，让多级滤镜交替读写两张纹理，避免输入输出冲突。”</em></p>
+<p>项目的 <code>convertRGBtoNV12</code> 在绑定输入前，先做这件事：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 清空当前渲染目标：A 不再被当作输出画布。</span></span><br><span class="line">ID3D11RenderTargetView* nullRTV[] = &#123; <span class="literal">nullptr</span> &#125;;</span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, nullRTV, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+<p>这里的“清空”是清空输出槽的绑定，不是擦掉纹理 A 的画面，也不是释放纹理。<br>随后才把 A 接到输入槽，并选择另一个输出目标：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 现在可以把已经画好的 A 作为输入读取。</span></span><br><span class="line">m_context-&gt;<span class="built_in">PSSetShaderResources</span>(<span class="number">0</span>, <span class="number">1</span>, &amp;inputTex);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 将计算出的亮度写到 NV12 的 Y 平面，而不是写回 A。</span></span><br><span class="line">m_context-&gt;<span class="built_in">OMSetRenderTargets</span>(<span class="number">1</span>, &amp;targetY, <span class="literal">nullptr</span>);</span><br></pre></td></tr></table></figure>
+<p>使用<strong>Ping-Pong 双缓冲</strong>，使每一步都有独立的输入和输出<br>如果连续做磨皮、美白、锐化，每一步都需要“读上一轮结果、写新结果”。<br>准备 A、B 两张纹理交替使用：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>读取</th>
+<th>写入</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>磨皮</td>
+<td>原图</td>
+<td>A</td>
+</tr>
+<tr>
+<td>美白</td>
+<td>A</td>
+<td>B</td>
+</tr>
+<tr>
+<td>锐化</td>
+<td>B</td>
+<td>A</td>
+</tr>
+</tbody></table>
+</li>
+</ol>
+<h3 id="采集模块"><a href="#采集模块" class="headerlink" title="采集模块"></a>采集模块</h3><ol>
+<li><p>摄像头共享与独占：有2级，前1级可共享读不调整帧源配置；后一级使用独占控制，能控制帧源配置。每次申请失败要先清理资源。</p>
+<p>微软官方WinRTFrameReader标准流程:<br>① 寻址（Enumerate）：在庞杂的系统设备列表中，拿到目标摄像头的“唯一身份证”（DeviceID）。<br>② 配置与初始化（Initialize Settings）：向系统提交一份“需求清单”，决定接下来是用CPU还是GPU处理数据，是独占硬件还是与其他软件共享。<br>③ 定位数据源（Find Source）：从摄像头提供的多个功能镜头中，精准剥离出“彩色画面（Color)”的数据流。<br>④ 建立阅读器（Create Reader）：为选定的镜头建立一个专属的数据接收队列，并决定当程序处理不过来时该怎么办。<br>⑤ 订阅事件（Subscribe Event)：挂载一个FrameArrived回调函数，告诉系统有新画面时通知程序。<br>⑥ 开机拉流（Start)：正式命令摄像头开始录像。<br>⑦ 拆解快递（Frame Arrived Callback)：获取最新帧，进行格式转换，并提取为 C++ 能读写的裸内存。<br>⑧ 关机清理（Cleanup）：停止数据流，释放摄像头设备，销毁阅读器。</p>
+</li>
+<li><p><strong>WGC 帧池</strong>，是 Windows 截取窗口或屏幕时，用来暂存、复用采集画面的缓冲区集合，负责在“系统产生画面”和“程序处理画面”之间交接数据。<strong>帧池</strong>是一组复用的帧缓冲区。<br>① 确定截取哪个窗口<br>② 创建两缓冲帧池<br>③ 注册回调，然后启动采集，“有新帧时，调用 <code>onFrameArrived</code>”<br>④ 系统产生新画面，触发回调，系统将采集画面放入帧池，触发 <code>FrameArrived</code> 事件，这个通知在帧池内部工作线程触发<br>⑤ 回调中调用 <code>TryGetNextFrame()</code>，真正取得帧<br>⑥ 从帧里取得纹理，再提供给渲染<br>frame → Surface → <code>ID3D11Texture2D</code> → 创建或复用 SRV<br>然后在锁内更新 <code>m_currentSRV</code>。后续通过 <code>getTexture()</code> 取得这个 SRV，作为读取画面的入口。<br>⑦ 用完采集帧，结束借用，允许缓冲复用。帧的有效使用结束后，缓冲可以归还给系统，装下一张画面。C++&#x2F;WinRT 包装对象在析构时释放自己持有的接口引用。<br>局部 <code>frame</code> 离开作用域 → 包装对象释放引用 → 最后一个帧引用消失 → 帧生命周期结束 → WGC 回收缓冲。</p>
+</li>
+<li><p>屏幕采集窗口最小化边界：是指在创建帧池前判断 <code>size.Width&lt;=0 || size.Height&lt;=0</code> 失败时返回，避免用非法尺寸创建资源，是启动阶段的防御。</p>
+</li>
+<li><p>WASAPI：音频捕获客户端（Capture Client）<br>① 环境准备（COM Initialization)：初始化底层组件环境。<br>② 发现设备（Device Enumeration)：查找系统中的麦克风或扬声器。<br>③ 激活音频客户端（Activate IAudio Client)）：与指定的硬件设备建立连接。<br>④ 协商格式与初始化（Negotiate &amp; Initialize）：获取设备的音频格式（采样率、位深），并告诉系统我们要怎么用它（独占还是共享？要不要录系统声音？）。<br>⑤ 获取捕获服务（Get lAudio Capture Client)：拿到真正用来“抽水”的数据读取工具。<br>⑥ 启动数据流（Start）：命令声卡开始录音。<br>⑦ 捕获大循环（The Capture Loop）：在一个死循环中，不断检查有没有新数据。如果有，拿出来转换格式；拿完必须把缓冲区还给系统。<br>⑧ 停止与清理（Stop &amp; Cleanup）：停止流，释放所有资源。</p>
+</li>
+<li><p>音频统一浮点32位格式便于乘音量、混合和重采样。</p>
+</li>
+<li><p>静音包实现按原包长填 0，保持时长连续，不删除以防止和视频错位。</p>
+</li>
+</ol>
+<h3 id="编码推流模块"><a href="#编码推流模块" class="headerlink" title="编码推流模块"></a>编码推流模块</h3><ol>
+<li><p>NVENC&#x2F;AMF&#x2F;x264 硬编软编回退：NVENC 使用 NVIDIA 视频编码硬件；AMF 是 AMD 媒体接口，这里用于硬件编码；x264 用 CPU 做 H.264 软件编码。可以都输出 H.264。</p>
+</li>
+<li><p>码控模式切换：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>直观解释</th>
+<th>使用时要知道</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CBR 恒定码率</td>
+<td>尽量围绕固定带宽预算输出</td>
+<td>适合带宽约束，但并非每毫秒完全相同；复杂画面可能更糊</td>
+</tr>
+<tr>
+<td>VBR 可变码率</td>
+<td>简单画面少用，复杂画面多用</td>
+<td>通常结合目标与最大码率控制波动</td>
+</tr>
+<tr>
+<td>CQP 恒定质量因子</td>
+<td>固定量化参数，压缩强度较固定</td>
+<td>码率随内容变化；不等于所有场景的感知画质完全相同</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>低延迟策略：关闭 B 帧 <code>ctx-&gt;max_b_frames=0;</code>；缩减编码器缓冲区大小 <code>ctx-&gt;rc_buffer_size = bitrate /2;</code>，使编码器在网卡时立刻降低画质，而不是堆积帧；编码器低延迟参数优化（开启低延迟模式）；减小网络数据包大小和缓冲。</p>
+<p>RTMP 调优：RTMP 用来把 FLV 音视频流经网络持续发送到服务器。TCP 保证有序可靠传输，但丢包后的重传等待可能带来延迟。<br>在 <code>StreamMuxer::applyNetworkoptions</code> 中设置 <code>rw_timeout=3000000</code>，单位微秒，即 3 秒；开启 <code>flush_packets=1</code> 每个包写出后，刷新底层 I&#x2F;O 缓冲，减少数据留在 FFmpeg 缓冲里的等待，强制立刻发包；开启 <code>tcp_nodelay=1</code> 禁用系统的 Nagle 算法合并小包的等待，让系统有包就发，不为了节省头部开销而“拼凑大包”，降低发送延迟；将 FFmpeg 内部的包缓冲队列 <code>fifo_size</code> 从默认的一万砍到50，一旦网络拥堵立刻让上层感知并降码率。</p>
+</li>
+<li><p>拥塞降码率与丢非关键帧：</p>
+<table>
+<thead>
+<tr>
+<th>本次检查时的队列包数</th>
+<th>当前代码执行什么</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>大于 30</td>
+<td>先删除队列中非关键视频包；只有实际删掉至少一个包，才尝试把当前目标码率乘 0.7</td>
+</tr>
+<tr>
+<td>21～30，包括 30</td>
+<td>把当前目标码率乘 0.95</td>
+</tr>
+<tr>
+<td>1～20，包括 20</td>
+<td>这次检查不调整目标码率</td>
+</tr>
+<tr>
+<td>等于 0</td>
+<td>若当前目标低于用户配置值，则乘 1.02，逐步恢复，最多恢复到用户配置值</td>
+</tr>
+</tbody></table>
+<p>两套拥塞控制：第一套根据队列包数量；第二套根据处理一张视频帧，包括相应的格式处理、同步、编码和编码包入队总耗时。</p>
+<table>
+<thead>
+<tr>
+<th>规则</th>
+<th>算的是什么</th>
+<th>数字例子</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>单次耗时大于 200 ms，或平滑耗时大于 150 ms</td>
+<td>判为拥塞</td>
+<td>不是队列超过 20&#x2F;30 的那套判断</td>
+</tr>
+<tr>
+<td>前两次连续拥塞</td>
+<td>该控制器自己的当前目标×0.7</td>
+<td>2500→1750→1225 kbps</td>
+</tr>
+<tr>
+<td>连续拥塞次数超过 2</td>
+<td>该控制器自己的当前目标×0.5</td>
+<td>1225→612.5 kbps，再受上下限约束</td>
+</tr>
+<tr>
+<td>符合恢复条件</td>
+<td>每次增加 50000 bit&#x2F;s，即 50 kbps</td>
+<td>1500→1550 kbps，不是增加 50%</td>
+</tr>
+</tbody></table>
+</li>
+<li><p>断线重连：<em>“发送线程发现网络写包失败后，会标记对应输出不可用，暂时跳过这一路发送，并周期性尝试关闭旧 IO、重新打开原推流地址。连接成功后清除失败标记，恢复后续包的发送。重试由出队包计数触发（30个）；另外，网络连接恢复和媒体播放恢复是两回事，还要验证媒体头、编码参数、关键帧和时间戳是否正确恢复。”</em></p>
+</li>
+<li><p>音视频同步：<br>用已处理音频样本累计数作为同步参考，并用视频 PTS 计数推算视频时长。<br>计算 PTS 以实现同步。DTS 由编码器生成，在关闭 B 帧的情况下，理论上两者相同。</p>
+<p><em>“把音频样本数和视频帧计数换算成秒，以音频为参考。视频落后就重复画面补时间，视频超前就跳过输入等待；阈值是一帧时长，单次最多补五帧。”</em></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 音频样本数除以采样率，得到音频时间。若 diff&gt;一帧时长，音频走得更远，视频时间落后，需要重复编码当前画面，让视频计数追上；补帧数限制最多 5。若 diff&lt;-一帧时长，视频走得太快，丢掉本次输入，不增加视频计数，等音频追上。</span></span><br><span class="line"><span class="type">double</span> audioSec = (<span class="type">double</span>)m_totalAudioSamples / m_config.audio.sampleRate;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 视频计数除以帧率，得到视频时间。</span></span><br><span class="line"><span class="type">double</span> videoSec = (<span class="type">double</span>)m_videoPtsCounter / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> frameDur = <span class="number">1.0</span> / m_config.base.fps;</span><br><span class="line"><span class="type">double</span> diff = audioSec - videoSec;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="端云内容模块"><a href="#端云内容模块" class="headerlink" title="端云内容模块"></a>端云内容模块</h3><ol>
+<li><p>处理场景&#x2F;素材云端同步：客户端把对象序列化为 JSON 发送给云端，或把云端 JSON 还原成本地对象实现设置同步。</p>
+<p><em>“项目使用 Qt 的 JSON API 做场景数据转换。保存时，手动把场景和元素的属性写入 QJsonObject，把多个元素组织成 QJsonArray，再通过 QJsonDocument 转成 JSON 文本，包装成 HTTP 请求发送。加载时先解析云端 JSON，再读取素材 ID、类型和布局属性，获取或创建素材源，重新创建 SceneItem 并恢复位置、尺寸和层级。JSON 序列化负责数据表达，上传、下载和应用到本地对象这些流程合起来才是这里的同步。”</em></p>
+</li>
+<li><p>验证码&#x2F;密码&#x2F;企微扫码三种登录鉴权：<br><em>“密码登录提交账号密码、租户 ID 和客户端标识等，组成 JSON，发送 <code>POST</code> 到 <code>/auth/login</code>；企微扫码通过 WebEngine 加载二维码页面，拦截并捕获携带 Code 的重定向链接，再提取 Code 提交给业务后端换取本系统 Token。验证码部分实现了接口封装，具体短信服务商不是我接入的。登录成功后统一保存 Token，由 HttpManager（定义了 RESTful动作 get&#x2F;post&#x2F;put&#x2F;del）在后续请求中附加 Authorization 请求头，获取用户资料和权限，供后续使用。”</em></p>
+<p>序列化：网络层将 C++ 的 <code>QJsonObject</code> 对象序列化为紧凑的 JSON 字符串（<code>QJsonDocument:Compact</code>）。</p>
+</li>
+<li><p><strong>Bearer Token</strong>：是一种加密字符串，它代表的是用户的身份或权限。服务端通过验证这个 Token，确认请求的发起者具备访问某些资源的权限。<code>QString finalToken=token.startsWith(&quot;Bearer&quot;)？token：(&quot;Bearer&quot;+token)</code>;强制为 Token 加上了 Bearer 前缀。</p>
+<p>① 替代传统明文认证，提升安全性：是服务器生成的 “临时凭证”：令牌本身不包含用户敏感信息（如密码），即使泄露，攻击者也无法反向推导出用户账号密码；令牌可设置短期有效期，降低泄露后的风险范围。<br>② 简化后续请求的鉴权流程，提升效率：用户只需在首次登录时提交真实凭证（如账号密码），后续向服务器发起请求时，无需重复提交敏感信息，只需在 HTTP 请求头中携带 Bearer Token 即可，流程极大简化。<br>③ 灵活控制权限范围（配合令牌内容设计）：服务器可在生成令牌时，将用户的权限信息（如 “只能访问订单列表，不能修改订单”）、用户 ID 等数据加密存储在令牌中（如 JWT 格式的 Bearer Token），后续验证令牌时可直接解析出权限，实现 “精细化权限控制”。</p>
+</li>
+<li><p>创建者与 authList 权限模型：<code>SceneAuthEntry</code> 中有 userId、query、add、edit、del；云端字段对应 queryAuth、addAuth、editAuth、deleteAuth。它类似“每个场景一张授权名单”。</p>
+<p>① 编辑&#x2F;删除先检查对应全局权限，可直接放行。<br>② 当前用户是创建者，或者创建者为 0，直接放行。<br>③ 遍历 authList，找到用户，按本次操作检查对应值是否为 1。<br>④ 没匹配则拒绝。<br>例：张三创建场景，李四只有 query&#x3D;1、edit&#x3D;0，可以查看但不能通过这项对象授权编辑。不过李四若拥有全局编辑权限，会在第一步被放行，因此不能只看 authList。</p>
+</li>
+<li><p>共享布局与个人偏好两级内容合并：平台提供默认布局配置序列化成 JSON 保存到云端，提供给多个用户使用的同一套场景设置，并存储个人偏好设置，将各个元素的位置、尺寸等信息从共享配置读取，而设备、组件的选择保留个人偏好。</p>
+</li>
+<li><p>素材下载热替换：异步下载和替换，使用 <code>emit</code> 通知管理器替换源文件</p>
+</li>
+</ol>
+<div class="admonition example admonition-collapsible-wrapper">
+        <details class="admonition-collapsible collapsible-closed" >
+          <summary class="admonition-title">
+            <span class="mdi mdi-file-code-outline admonition-icon"></span><span class="admonition-title-text">张老师打开管理员配置的教学场景</span><span class="mdi mdi-chevron-down admonition-chevron"></span>
+          </summary><div class="admonition-content">
+
+<ol>
+<li>下载共享场景配置和张老师的个人偏好。</li>
+<li>根据元素 UUID 合并：位置、大小用管理员的；摄像头使用张老师选择的 USB 摄像头。</li>
+<li>场景里的课件图片需要从云端下载。</li>
+<li>图片下载完成后，找到对应的图片元素，替换它关联的内容源。</li>
+<li>课件显示在管理员安排的位置，不必重建整个场景。</li>
+</ol>
+</div>
+        </details>
+      </div>
+
+<h3 id="端云-AI"><a href="#端云-AI" class="headerlink" title="端云 AI"></a>端云 AI</h3><ol>
+<li>旁路采样：当系统从摄像头或麦克风采集到原始数据时，数据流被一分为二：<br>① 主路(Main Pipeline):传给<code>m_recordcontroller</code>进行高强度编码（如H.264&#x2F;AAC），并推流给观众。<br>② 旁路(AI Bypass):传给<code>_aiBridge</code>，进行低分辨率降采样和切片，供Al审核使用。<br>分一路根据 PTS 每秒采样 2 帧（2FPS），对音频分片（每2秒一个 PCM 切片），通过 HTTP 上传字节流<code>QByteArray</code>。</li>
+<li>视频缩放与音频重采样：使用 <code>sws_scale</code> 把 NV12 转为 YUV420P，硬编码输出为 480×480；主采集是 48 kHz 双声道 Float32，云端需要 16 kHz 单声道 S16。同时改变采样率、声道数和数值格式，转换结果写入 FIFO。</li>
+<li>按时间切片上传：FIFO 累计够 32000 个样本，取出 64000 字节作为一片 2 秒 PCM，交给上传回调。未够一片的数据继续留在 FIFO。</li>
+<li>队列丢弃策略：视频队列在入队前若 <code>size()&gt;5</code>，或音频入队前若 <code>size()&gt;100</code>，丢最旧任务。丢旧视频使分析更接近当前状态；音频更重连续性，所以阈值更大。保证实时性&gt;完整性。</li>
+<li>端云状态轮询与自动停播逻辑： 默认 1000 ms 轮询云端状态，下播或 roomId 失效时自动停播。</li>
+</ol>
+<h3 id="处理崩溃报告与调用栈还原"><a href="#处理崩溃报告与调用栈还原" class="headerlink" title="处理崩溃报告与调用栈还原"></a>处理崩溃报告与调用栈还原</h3><ol>
+<li><p>dump 和调用栈分别是什么：<br>调用栈记录函数调用关系：例如用户开相机 → 初始化设备 → 创建 reader → 出错。机器运行时主要留下地址，符号文件把地址对应到函数名、源码文件和行号。</p>
+<p>dump 是出错时线程、寄存器和部分内存等现场数据；PDB 是某次构建的符号映射。<strong>dump 保存现场，PDB 帮助解释现场</strong>。 不是拿到任何同名 PDB 都能还原，必须匹配实际 EXE&#x2F;DLL 的构建。</p>
+</li>
+<li><p>仓库实际做了哪些步骤<br>注册未处理 SEH、CRT 无效参数、纯虚函数、<code>std::terminate</code> 和信号等入口；出错后建立 CrashDumps 目录，调用 <code>MiniDumpWriteDump</code> 写 dump，再输出文本栈。</p>
+<p>文本栈使用 <code>SymInitialize</code> 加载符号，<code>StackWalk64</code> 沿栈遍历，<code>SymFromAddr</code> 查函数名，<code>SymGetLineFromAddr64</code> 查行号。<code>g_IsInCrashHandler</code> 用于避免处理器递归进入，最后终止进程。</p>
+<p>“访问冲突”常指读写无效地址；“纯虚调用”可能与对象生命周期异常有关。但异常名只告诉你症状，不能直接断定根因。最顶层可能只是崩溃处理函数，真正错误还要看异常上下文和之前调用。</p>
+</li>
+<li><p>Release 为什么还要保留符号<br>CourseStudio.pro 在 Release 中增加 <code>/Zi</code> 与 <code>/DEBUG</code>，便于保留调试符号。Release 仍可以优化；有符号不等于变量都完整保留，优化会造成内联或变量不可见。</p>
+<p>一个能讲清的排查过程：先确认版本与匹配符号，再打开 dump，找异常线程、异常地址和调用链，检查对象生命周期、参数和并发时序，结合复现步骤验证假设。不能只看到某库在栈顶就断言库有 bug。</p>
+<p>当前在崩溃进程内使用 Qt、堆分配和符号解析，严重内存损坏或死锁时报告仍可能失败；手动捕获上下文的 terminate&#x2F;signal 路径也未必保留最初抛错点。应讲“提升现场可诊断性”，不要承诺所有崩溃都能完整还原。</p>
+</li>
+</ol>
+<p><em>“我用 dump 保留现场，用对应构建的 PDB 还原函数和源码位置，再结合异常线程及日志查生命周期和并发问题。Release 也生成符号，但优化和现场损坏会限制可见信息。”</em></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta"><i class="fas fa-circle-user fa-fw"></i>文章作者: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz">逸人</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta"><i class="fas fa-square-arrow-up-right fa-fw"></i>文章链接: </span><span class="post-copyright-info"><a href="https://blog.x1ren.xyz/2026/09/09/C++/projects/project3/">https://blog.x1ren.xyz/2026/09/09/C++/projects/project3/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta"><i class="fas fa-circle-exclamation fa-fw"></i>版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来源 <a href="https://blog.x1ren.xyz" target="_blank">逸人の博客</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/C/">C++</a></div><div class="post-share"><div class="social-share" data-image="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" data-sites="twitter,wechat,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><a class="pagination-related" href="/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/" title="音视频编解码基础"><div class="cover" style="background: var(--default-bg-color)"></div><div class="info"><div class="info-1"><div class="info-item-1">上一篇</div><div class="info-item-2">音视频编解码基础</div></div><div class="info-2"><div class="info-item-1">音视频公式编解码流程。包括 ，AAC/PCM 编码，fmp4/ts/flv 视频容器等。</div></div></div></a><a class="pagination-related" href="/2026/08/07/C++/cpp8g/" title="C++ 八股复习笔记"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="info text-right"><div class="info-1"><div class="info-item-1">下一篇</div><div class="info-item-2">C++ 八股复习笔记</div></div><div class="info-2"><div class="info-item-1">C++ 八股复习笔记一、计算机网络001. TCP&#x2F;IP 模型和 OSI 模型OSI 是理论上的国际标准，是七层协议体系结构，从上至下分别是应用层、表示层、会话层、运输层、网络层、数据链路层和物理层。而 TCP&#x2F;IP 模型是实际上的工业标准，是根据实用性设计的四层体系结构，从上至下分别是应用层、运输层、网络层和网络接口层。 TCP&#x2F;IP 模型的应用层对应 OSI 的应用层、表示层和会话层。将这三层合并后，让应用程序自行管理数据格式会更加高效。应用层负责应用进程间的交互，来完成特定的网络应用，它的协议定义的是应用进程间通信和交互的规则。其中协议有很多，比如 DNS、HTTP、HTTPS 和 SMTP 等等。 TCP&#x2F;IP 的运输层对应 OSI 的运输层，负责向两台主机中进程间的通信提供通用的数据传输服务，主要使用 TCP 和 UDP 两种协议。其中 TCP 提供的是面向连接、可靠的数据传输服务，而 UDP 提供的是无连接、不可靠的数据传输服务。 TCP&#x2F;IP 的网络层对应 OSI 的网络层，使用的是无连接的 IP 协议，利用 IP ...</div></div></div></a></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><a class="pagination-related" href="/2025/10/04/C++/cpp0/" title="C++ 笔记"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-10-04</div><div class="info-item-2">C++ 笔记</div></div><div class="info-2"><div class="info-item-1">杂记</div></div></div></a><a class="pagination-related" href="/2025/08/31/C++/cpp11/" title="运算符重载与函数对象"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-31</div><div class="info-item-2">运算符重载与函数对象</div></div><div class="info-2"><div class="info-item-1">函数对象：使用方式看上去像函数，但实际是类的一个对象；是因为类重载了“()”运算符，所以让对象使用的方式看起来是函数，即对象后面的括号像函数一样调用。 12345struct Adder &#123;               // 1. 类重载了 operator()    int operator()(int a, int b) const &#123; return a + b; &#125;&#125;;Adder add;                   // 2. 函数对象int r = add(3, 4);           // 调用函数对象 友元函数不是类的成员函数，但它可以访问类的私有和保护成员，为操作符重载提供了灵活性。 123friend std::ostream&amp; operator&lt;&lt;(std::ostream&amp; os, const Student&amp; s) &#123;    return os &lt;&lt; &#x27;[&#x27; &lt;&lt; s.id &lt;&lt; &#x27;,&#x27...</div></div></div></a><a class="pagination-related" href="/2025/07/29/C++/cpp1/" title="C++ 性能优化笔记"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-07-29</div><div class="info-item-2">C++ 性能优化笔记</div></div><div class="info-2"><div class="info-item-1">积累 C++ 性能优化的操作和思路</div></div></div></a><a class="pagination-related" href="/2025/08/17/C++/cpp10/" title="std::move 与 std::forward 以及左右值"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-17</div><div class="info-item-2">std::move 与 std::forward 以及左右值</div></div><div class="info-2"><div class="info-item-1">https://www.bilibili.com/video/BV1ZViMBGECR/?spm_id_from=0.0.search.video_card.click&amp;vd_source=11db1d1a077558e043cecb028334f12a左值引用 &amp; 就是别名 值类别参考  lvalue: 左值，可取地址，如变量名。 prvalue: 纯右值，如 int(42) 临时量。 xvalue: 将亡值， 如表达式 std::move(obj)。  纯右值和将亡值都统称右值（rvalue），可以是不具名的临时变量，可以是即将离开作用域或被 move 的类型。左值和将亡值都属于泛左值。 Attention  值类别（value category）只看“表达式的静态属性”，跟对象本身的状态无关。变量本身没有值类别，只有表达式才有。 12int  x = 42;decltype(auto) b = std::move(x); 当以后写 b 这个标识符时，它所在的表达式是左值（因为具名变量都是左值表达式），但它的声明类型仍然是 int&amp;&amp;。   s...</div></div></div></a><a class="pagination-related" href="/2025/08/06/C++/cpp4/" title="C++ 多线程笔记3"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-06</div><div class="info-item-2">C++ 多线程笔记3</div></div><div class="info-2"><div class="info-item-1">实现简易线程池</div></div></div></a><a class="pagination-related" href="/2025/08/05/C++/cpp3/" title="C++ 多线程笔记2"><img class="cover" src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" alt="cover"><div class="info text-center"><div class="info-1"><div class="info-item-1"><i class="far fa-calendar-alt fa-fw"></i> 2025-08-05</div><div class="info-item-2">C++ 多线程笔记2</div></div><div class="info-2"><div class="info-item-1">使用 condition_variable 实现生产者与消费者模型</div></div></div></a></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div id="twikoo-wrap"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info text-center"><div class="avatar-img"><img src="/./img/avatar.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info-name">逸人</div><div class="author-info-description">记忆保存库</div><div class="site-data"><a href="/archives/"><div class="headline">文章</div><div class="length-num">70</div></a><a href="/tags/"><div class="headline">标签</div><div class="length-num">45</div></a><a href="/categories/"><div class="headline">分类</div><div class="length-num">6</div></a></div><a id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/x1renn"><i class="fab fa-github"></i><span>Follow Me</span></a><div class="card-info-social-icons"><a class="social-icon" href="https://github.com/x1renn" target="_blank" title="Github"><i class="fab fa-github" style="color: #24292e;"></i></a><a class="social-icon" href="mailto:x1ren@qq.com" target="_blank" title="Email"><i class="fas fa-envelope" style="color: #4a7dbe;"></i></a><a class="social-icon" href="https://steamcommunity.com/id/979869114/" target="_blank" title="Steam"><i class="fa-brands fa-steam" style="color: #hdhfbb;"></i></a></div></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn fa-shake"></i><span>公告</span></div><div class="announcement_content">哈喽哈喽🍍</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AvatarX-%E6%99%BA%E8%83%BD%E7%BB%88%E7%AB%AF%E5%B9%B3%E5%8F%B0"><span class="toc-number">1.</span> <span class="toc-text">AvatarX 智能终端平台</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E6%97%B6%E7%BE%8E%E9%A2%9C%E6%A8%A1%E5%9D%97-OpenCV"><span class="toc-number">1.1.</span> <span class="toc-text">实时美颜模块 OpenCV</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%9D%A2%E9%83%A8%E9%A9%B1%E5%8A%A8"><span class="toc-number">1.2.</span> <span class="toc-text">面部驱动</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E5%AD%97%E4%BA%BA%E9%81%93%E5%85%B7%E6%A8%A1%E5%9D%97"><span class="toc-number">1.3.</span> <span class="toc-text">数字人道具模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF%E6%A8%A1%E5%9D%97"><span class="toc-number">1.4.</span> <span class="toc-text">渲染管线模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%87%87%E9%9B%86%E6%A8%A1%E5%9D%97"><span class="toc-number">1.5.</span> <span class="toc-text">采集模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%BC%96%E7%A0%81%E6%8E%A8%E6%B5%81%E6%A8%A1%E5%9D%97"><span class="toc-number">1.6.</span> <span class="toc-text">编码推流模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%AF%E4%BA%91%E5%86%85%E5%AE%B9%E6%A8%A1%E5%9D%97"><span class="toc-number">1.7.</span> <span class="toc-text">端云内容模块</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%AB%AF%E4%BA%91-AI"><span class="toc-number">1.8.</span> <span class="toc-text">端云 AI</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%A4%84%E7%90%86%E5%B4%A9%E6%BA%83%E6%8A%A5%E5%91%8A%E4%B8%8E%E8%B0%83%E7%94%A8%E6%A0%88%E8%BF%98%E5%8E%9F"><span class="toc-number">1.9.</span> <span class="toc-text">处理崩溃报告与调用栈还原</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/10/14/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E5%8D%8F%E8%AE%AE/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:32:29.859Z" title="更新于 2026-10-14 05:32:29">2026-10-14</time></div></div><div class="aside-list-item no-cover"><div class="content"><a class="title" href="/2026/09/12/%E7%AC%94%E8%AE%B0/%E9%9F%B3%E8%A7%86%E9%A2%91/%E9%9F%B3%E8%A7%86%E9%A2%91%E5%9F%BA%E7%A1%80/" title="音视频编解码基础">音视频编解码基础</a><time datetime="2026-10-13T21:31:12.809Z" title="更新于 2026-10-14 05:31:12">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/09/09/C++/projects/project3/" title="简历项目"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="简历项目"/></a><div class="content"><a class="title" href="/2026/09/09/C++/projects/project3/" title="简历项目">简历项目</a><time datetime="2026-10-13T21:28:45.239Z" title="更新于 2026-10-14 05:28:45">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="内窥镜影像采集与病灶辅助分析工作站"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project2/" title="内窥镜影像采集与病灶辅助分析工作站">内窥镜影像采集与病灶辅助分析工作站</a><time datetime="2026-10-13T21:25:02.430Z" title="更新于 2026-10-14 05:25:02">2026-10-14</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统"><img src="https://s2.loli.net/2025/07/31/TbjgykiPFNKzBuM.png" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="网络相机图传与多相机集中管理系统"/></a><div class="content"><a class="title" href="/2026/10/13/C++/projects/project1/" title="网络相机图传与多相机集中管理系统">网络相机图传与多相机集中管理系统</a><time datetime="2026-10-13T21:24:30.954Z" title="更新于 2026-10-14 05:24:30">2026-10-14</time></div></div></div></div></div></div></main><footer id="footer" style="background: transparent;"><div class="footer-other"><div class="footer-copyright"><span class="copyright">&copy;&nbsp;2024 - 2026 By 逸人</span><span class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo 7.3.0</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly 5.4.3</a></span></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="日间和夜间模式切换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside-config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="前往评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js?v=5.4.3"></script><script src="/js/main.js?v=5.4.3"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.0.17/dist/fancybox/fancybox.umd.min.js"></script><script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.min.js" type="module"></script><div class="js-pjax"><script>(() => {
+  const isShuoshuo = GLOBAL_CONFIG_SITE.pageType === 'shuoshuo'
+  const option = null
+
+  const getCount = () => {
+    const countELement = document.getElementById('twikoo-count')
+    if(!countELement) return
+    twikoo.getCommentsCount({
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      urls: [window.location.pathname],
+      includeReply: false
+    }).then(res => {
+      countELement.textContent = res[0].count
+    }).catch(err => {
+      console.error(err)
+    })
+  }
+
+  const init = (el = document, path = location.pathname) => {
+    twikoo.init({
+      el: el.querySelector('#twikoo-wrap'),
+      envId: 'https://1-zeta-olive.vercel.app/',
+      region: '',
+      onCommentLoaded: () => {
+        btf.loadLightbox(document.querySelectorAll('#twikoo .tk-content img:not(.tk-owo-emotion)'))
+      },
+      ...option,
+      path: isShuoshuo ? path : (option && option.path) || path
+    })
+
+    
+
+    isShuoshuo && (window.shuoshuoComment.destroyTwikoo = () => {
+      if (el.children.length) {
+        el.innerHTML = ''
+        el.classList.add('no-comment')
+      }
+    })
+  }
+
+  const loadTwikoo = (el, path) => {
+    if (typeof twikoo === 'object') setTimeout(() => init(el, path), 0)
+    else btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(() => init(el, path))
+  }
+
+  if (isShuoshuo) {
+    'Twikoo' === 'Twikoo'
+      ? window.shuoshuoComment = { loadComment: loadTwikoo }
+      : window.loadOtherComment = loadTwikoo
+    return
+  }
+
+  if ('Twikoo' === 'Twikoo' || !false) {
+    if (false) btf.loadComment(document.getElementById('twikoo-wrap'), loadTwikoo)
+    else loadTwikoo()
+  } else {
+    window.loadOtherComment = loadTwikoo
+  }
+})()</script></div><script>window.newestComments = {
+  changeContent: content => {
+    if (content === '') return content
+
+    content = content.replace(/<img.*?src="(.*?)"?[^\>]+>/ig, '[图片]') // replace image link
+    content = content.replace(/<a[^>]+?href=["']?([^"']+)["']?[^>]*>([^<]+)<\/a>/gi, '[链接]') // replace url
+    content = content.replace(/<pre><code>.*?<\/pre>/gi, '[代码]') // replace code
+    content = content.replace(/<code>.*?<\/code>/gi, '[代码]') // replace code
+    content = content.replace(/<[^>]+>/g, "") // remove html tag
+
+    if (content.length > 150) {
+      content = content.substring(0, 150) + '...'
+    }
+    return content
+  },
+
+  generateHtml: (array, ele) => {
+    let result = ''
+
+    if (array.length) {
+      for (let i = 0; i < array.length; i++) {
+        result += '<div class="aside-list-item">'
+
+        if (true && array[i].avatar) {
+          const imgAttr = 'src'
+          const lazyloadNative = ''
+          result += `<a href="${array[i].url}" class="thumbnail"><img ${imgAttr}="${array[i].avatar}" alt="${array[i].nick}" ${lazyloadNative}></a>`
+        }
+
+        result += `<div class="content">
+        <a class="comment" href="${array[i].url}" title="${array[i].content}">${array[i].content}</a>
+        <div class="name"><span>${array[i].nick} / </span><time datetime="${array[i].date}">${btf.diffDate(array[i].date, true)}</time></div>
+        </div></div>`
+      }
+    } else {
+      result += '暂无评论'
+    }
+
+    ele.innerHTML = result
+    window.lazyLoadInstance && window.lazyLoadInstance.update()
+    window.pjax && window.pjax.refresh(ele)
+  },
+
+  newestCommentInit: (name, getComment) => {
+    const $dom = document.querySelector('#card-newest-comments .aside-list')
+    if ($dom) {
+      const data = btf.saveToLocal.get(name)
+      if (data) {
+        newestComments.generateHtml(JSON.parse(data), $dom)
+      } else {
+        getComment($dom)
+      }
+    }
+  },
+
+  run: (name, getComment) => {
+    newestComments.newestCommentInit(name, getComment)
+    btf.addGlobalFn('pjaxComplete', () => newestComments.newestCommentInit(name, getComment), name)
+  }
+}</script><script>window.addEventListener('load', () => {
+  const keyName = 'twikoo-newest-comments'
+  const { changeContent, generateHtml, run } = window.newestComments
+
+  const getComment = ele => {
+    const runTwikoo = () => {
+      twikoo.getRecentComments({
+        envId: 'https://1-zeta-olive.vercel.app/',
+        region: '',
+        pageSize: 4,
+        includeReply: true
+      }).then(res => {
+        const twikooArray = res.map(e => {
+          return {
+            'content': changeContent(e.comment),
+            'avatar': e.avatar,
+            'nick': e.nick,
+            'url': e.url + '#' + e.id,
+            'date': new Date(e.created).toISOString()
+          }
+        })
+
+        btf.saveToLocal.set(keyName, JSON.stringify(twikooArray), 10/(60*24))
+        generateHtml(twikooArray, ele)
+      }).catch(err => {
+        console.error(err)
+        ele.textContent= "无法获取评论，请确认相关配置是否正确"
+      })
+    }
+
+    if (typeof twikoo === 'object') {
+      runTwikoo()
+    } else {
+      btf.getScript('https://cdn.jsdelivr.net/npm/twikoo@1.6.44/dist/twikoo.all.min.js').then(runTwikoo)
+    }
+  }
+
+  run(keyName, getComment)
+})</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1.1.4/dist/click-heart.min.js" async="async" mobile="false"></script><script src="https://cdn.jsdelivr.net/npm/pjax@0.2.8/pjax.min.js"></script><script>(() => {
+  const pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+  window.pjax = new Pjax({
+    elements: 'a:not([target="_blank"])',
+    selectors: pjaxSelectors,
+    cacheBust: false,
+    analytics: false,
+    scrollRestoration: false
+  })
+
+  const triggerPjaxFn = (val) => {
+    if (!val) return
+    Object.values(val).forEach(fn => fn())
+  }
+
+  document.addEventListener('pjax:send', () => {
+    // removeEventListener
+    btf.removeGlobalFnEvent('pjaxSendOnce')
+    btf.removeGlobalFnEvent('themeChange')
+
+    // reset readmode
+    const $bodyClassList = document.body.classList
+    if ($bodyClassList.contains('read-mode')) $bodyClassList.remove('read-mode')
+
+    triggerPjaxFn(window.globalFn.pjaxSend)
+  })
+
+  document.addEventListener('pjax:complete', () => {
+    btf.removeGlobalFnEvent('pjaxCompleteOnce')
+    document.querySelectorAll('script[data-pjax]').forEach(item => {
+      const newScript = document.createElement('script')
+      const content = item.text || item.textContent || item.innerHTML || ""
+      Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+      newScript.appendChild(document.createTextNode(content))
+      item.parentNode.replaceChild(newScript, item)
+    })
+
+    triggerPjaxFn(window.globalFn.pjaxComplete)
+  })
+
+  document.addEventListener('pjax:error', e => {
+    if (e.request.status === 404) {
+      const usePjax = true
+      true
+        ? (usePjax ? pjax.loadUrl('/404.html') : window.location.href = '/404.html')
+        : window.location.href = e.request.responseURL
+    }
+  })
+})()</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">搜索</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="text-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  数据加载中</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="搜索文章" type="text"/></div></div><hr/><div id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="https://testingcf.jsdelivr.net/gh/Mr-EEEeee/Mr-EEEeee.github.io/js/search/local-search.js"></script></div></div></body></html>
